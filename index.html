@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>에린 음유시인 보관소 - 마비노기 모바일 MML 변환기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1a24; --card:rgba(30,30,42,.92); --line:#2d2d3d; --line2:#3a3a4f;
+    --text:#e2e8f0; --muted:#94a3b8; --dim:#64748b; --gold:#ffd700; --amber:#f59e0b;
+    --amber-soft:rgba(245,158,11,.15); --green:#34d399; --red:#f87171; --input:#0d0d14;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;min-height:100vh;display:flex;flex-direction:column}
+  header{border-bottom:1px solid #1f2937;background:rgba(17,24,39,.85);backdrop-filter:blur(6px);position:sticky;top:0;z-index:10}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px}
+  .hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 0;gap:8px}
+  .hdr h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.02em}
+  .hdr h1 .note{color:var(--gold);text-shadow:0 0 8px rgba(255,215,0,.4)}
+  .hdr h1 small{font-size:11px;color:var(--muted);font-weight:400;margin-left:4px}
+  .badge{font-size:11px;background:var(--amber-soft);color:#fbbf24;border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:99px;white-space:nowrap}
+  main{flex:1;padding:24px 0 40px}
+  .card{background:var(--card);border:1px solid rgba(255,215,0,.15);border-radius:18px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .intro{text-align:center;margin-bottom:22px}
+  .intro h2{margin:0 0 6px;font-size:22px}
+  .intro p{margin:0;color:var(--muted);font-size:14px}
+  .sec{margin-top:22px}
+  .sec-title{font-size:14px;font-weight:700;color:#fcd34d;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .sec-title .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--amber-soft);border:1px solid rgba(245,158,11,.4);align-items:center;justify-content:center;font-size:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}.card{padding:18px}}
+  label.f{display:block;font-size:13px;color:#cbd5e1;margin-bottom:6px;font-weight:500}
+  input[type=text],input[type=url],input[type=number],select{width:100%;background:var(--input);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;color:#fff;font:inherit;font-size:14px}
+  input:focus,select:focus{outline:none;border-color:var(--amber)}
+  input[type=file]{width:100%;color:var(--muted);font-size:13px}
+  input[type=file]::file-selector-button{background:#252535;color:#fff;border:1px solid var(--line2);border-radius:8px;padding:8px 12px;margin-right:10px;cursor:pointer;font:inherit}
+  .hint{font-size:12px;color:var(--dim);margin-top:6px}
+  .box{background:rgba(10,10,16,.55);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .tab{background:#15151f;border:1px solid var(--line2);color:var(--muted);border-radius:12px;padding:10px 6px;cursor:pointer;font:inherit;font-size:13px;font-weight:700;transition:.15s}
+  .tab small{display:block;font-weight:400;font-size:11px;color:var(--dim)}
+  .tab.on{border-color:var(--amber);background:var(--amber-soft);color:#fff}
+  .tab.on small{color:#fcd34d}
+  .panel{display:none}.panel.on{display:block}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line2);background:#252535;color:#e5e7eb;border-radius:10px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:#64748b}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.gold{background:linear-gradient(135deg,#d4af37,#aa7c11);color:#111;border:none}
+  .btn.gold:hover{filter:brightness(1.1)}
+  .btn.red{background:#7f1d1d;border-color:#b91c1c;color:#fecaca}
+  .btn.big{width:100%;padding:14px;font-size:15px;border-radius:12px}
+  .btn.ok{background:#064e3b;border-color:#047857;color:#a7f3d0}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .steps{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+  .steps li{margin:3px 0}
+  .yt-box{display:none;position:relative;margin-top:12px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid var(--line2)}
+  .yt-box iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .yt-msg{display:none;margin-top:8px;font-size:13px;color:#fcd34d;background:rgba(120,53,15,.25);border:1px solid rgba(180,83,9,.5);border-radius:10px;padding:8px 12px}
+  .rec{display:none;margin-top:12px;align-items:center;gap:10px;font-size:13px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#ef4444;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .meter{flex:1;height:8px;background:#111;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#10b981,#fbbf24,#ef4444)}
+  .chords{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:520px}
+  .chord{aspect-ratio:1;border-radius:50%;border:2px solid #374151;background:#111827;color:#9ca3af;font:inherit;font-weight:700;font-size:17px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:.15s;line-height:1.1}
+  .chord small{font-size:9px;font-weight:400;color:#6b7280;margin-top:2px}
+  .chord.on{border-color:var(--amber);background:var(--amber-soft);color:#fff;box-shadow:0 6px 16px rgba(245,158,11,.15)}
+  .chord.on small{color:#fcd34d}
+  details.adv{margin-top:14px}
+  details.adv summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:500}
+  .chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#cbd5e1;cursor:pointer}
+  .chk input{margin-top:3px;accent-color:#f59e0b}
+  .midi-list{margin-top:12px;display:none}
+  .midi-list .item{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:13px}
+  .midi-list .item span.meta{color:var(--dim);font-size:12px;white-space:nowrap}
+  #progress{display:none;margin-top:20px;text-align:center;padding:18px}
+  .spin{display:inline-block;width:40px;height:40px;border-radius:50%;border:4px solid var(--amber);border-top-color:transparent;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .bar{height:6px;background:#111;border-radius:99px;overflow:hidden;margin:12px auto 0;max-width:360px}
+  .bar i{display:block;height:100%;width:0;background:var(--amber);transition:width .2s}
+  #progText{color:#fbbf24;font-weight:500;margin:10px 0 0}
+  .err{display:none;margin-top:16px;background:rgba(127,29,29,.35);border:1px solid #991b1b;color:#fecaca;border-radius:12px;padding:12px 14px;font-size:13px;white-space:pre-wrap}
+  #result{display:none;margin-top:26px;border-top:1px solid var(--line);padding-top:22px}
+  .res-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;background:rgba(17,24,39,.6);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .res-head h3{margin:0;font-size:17px}
+  .res-head h3 span{color:#fbbf24}
+  .res-head p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#12121b;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .stat b{display:block;font-size:16px;color:#fff}
+  .stat span{font-size:11px;color:var(--dim)}
+  .warn{margin-top:12px;font-size:13px;color:#fcd34d;background:rgba(120,53,15,.25);border:1px solid rgba(180,83,9,.5);border-radius:10px;padding:10px 12px;display:none}
+  .warn ul{margin:0;padding-left:18px}
+  textarea{width:100%;background:#0b0b12;border:1px solid var(--line);border-radius:10px;padding:10px;color:#6ee7b7;font-family:ui-monospace,Consolas,monospace;font-size:12px;resize:vertical;word-break:break-all}
+  .track{background:#0e0e16;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+  .track-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .track-h .t{font-size:14px;font-weight:700;color:#fbbf24}
+  .track-h .t small{color:var(--dim);font-weight:400;font-size:12px;margin-left:6px}
+  .cnt{font-size:12px;color:var(--muted)}
+  .cnt.over{color:var(--red);font-weight:700}
+  .help{margin-top:26px;font-size:13px;color:var(--muted)}
+  .help h4{color:#e5e7eb;margin:16px 0 6px;font-size:14px}
+  .help ul{margin:0;padding-left:18px}
+  .help li{margin:3px 0}
+  .wave-wrap{position:relative;height:110px;margin-top:12px;background:#0b0b12;border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:crosshair;touch-action:none;user-select:none}
+  .wave-wrap canvas{width:100%;height:100%;display:block}
+  .sel{position:absolute;top:0;bottom:0;background:rgba(245,158,11,.18);border-left:2px solid var(--amber);border-right:2px solid var(--amber);pointer-events:none}
+  .hdl{position:absolute;top:50%;width:12px;height:34px;margin-top:-17px;background:var(--amber);border-radius:4px}
+  .hdl.l{left:-7px}.hdl.r{right:-7px}
+  .playhead{position:absolute;top:0;bottom:0;width:2px;background:#fff;display:none;pointer-events:none}
+  .sel-len{padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;color:#fcd34d;background:#12121b}
+  footer{border-top:1px solid #111827;background:rgba(3,7,18,.6);text-align:center;padding:14px;font-size:12px;color:var(--dim)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hdr">
+    <h1><span class="note">♪</span> 에린 음유시인 보관소<small>MML Converter</small></h1>
+    <span class="badge">마비노기 모바일 전용</span>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+<div class="card">
+  <div class="intro">
+    <h2>유튜브 음원 → MML 악보 변환기</h2>
+    <p>유튜브 링크·음원 파일·MIDI 파일에서 음을 뽑아 인게임 '클립보드에서 읽기'에 바로 붙여넣는 MML 코드로 만들어 드려요.</p>
+  </div>
+
+  <!-- 1. 곡 정보 -->
+  <div class="sec">
+    <p class="sec-title"><span class="num">1</span>곡 정보 <span style="font-weight:400;color:var(--dim);font-size:12px">(선택)</span></p>
+    <div class="grid2">
+      <div><label class="f" for="artist">아티스트 명</label><input type="text" id="artist" placeholder="예: 자우림"></div>
+      <div><label class="f" for="title">노래 제목</label><input type="text" id="title" placeholder="예: 사랑의 병원으로 놀러오세요"></div>
+    </div>
+  </div>
+
+  <!-- 2. 음원 -->
+  <div class="sec">
+    <p class="sec-title"><span class="num">2</span>음원 가져오기</p>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-src="youtube" type="button">유튜브 링크<small>음원 추출</small></button>
+      <button class="tab" data-src="audio" type="button">음원 파일<small>mp3 · wav · m4a</small></button>
+      <button class="tab" data-src="midi" type="button">MIDI 파일<small>가장 정확함</small></button>
+    </div>
+
+    <div class="box panel on" id="panel-youtube">
+      <div class="yt-msg" id="fileWarn" style="display:none;margin:0 0 12px">
+        지금 이 페이지를 컴퓨터 파일로 직접 열었어요 (주소가 file://로 시작). 이 상태에선 유튜브 정책상 영상이 재생되지 않아요(오류 153).<br>
+        함께 받은 <b>START.bat</b>을 더블클릭해서 열거나, 사이트를 인터넷 주소로 올려서 사용해 주세요.
+      </div>
+      <label class="f" for="ytUrl">유튜브 URL 링크</label>
+      <input type="url" id="ytUrl" placeholder="https://youtu.be/...">
+      <div class="yt-box" id="ytBox"><div id="ytPlayer"></div></div>
+      <div class="yt-msg" id="ytMsg"></div>
+      <div class="grid2" style="margin-top:12px">
+        <div>
+          <label class="f" for="ytStart">추출 시작 시간 (분:초)</label>
+          <div class="row" style="flex-wrap:nowrap"><input type="text" id="ytStart" inputmode="decimal" placeholder="0:00"><button class="btn" type="button" id="ytStartNow" title="영상의 현재 위치를 시작 시간으로">지금 위치</button></div>
+        </div>
+        <div>
+          <label class="f" for="ytEnd">추출 끝 시간 (비우면 영상 끝까지)</label>
+          <div class="row" style="flex-wrap:nowrap"><input type="text" id="ytEnd" inputmode="decimal" placeholder="끝까지"><button class="btn" type="button" id="ytEndNow" title="영상의 현재 위치를 끝 시간으로">지금 위치</button></div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>링크를 넣으면 위에 영상이 나와요. 필요하면 추출할 <b>시작·끝 시간</b>을 정하세요.</li>
+        <li><b>음원 추출 시작</b> → 뜨는 창에서 <b>'이 탭'</b>을 고르고 <b>'탭 오디오도 공유'</b>가 켜진 상태로 <b>공유</b>를 누르세요.</li>
+        <li>영상이 시작 시간부터 <b>자동 재생</b>되며 추출되고, 끝 시간이 되면 <b>자동으로 멈춰요</b>. 중간에 멈추려면 <b>추출 끝내기</b>.</li>
+        <li>아래에 나온 파형에서 변환할 구간을 고르고 <b>MML 악보 만들기</b>를 누르세요.</li>
+      </ol>
+      <div class="row" style="margin-top:12px">
+        <button class="btn gold" type="button" id="recStart">● 음원 추출 시작</button>
+        <button class="btn" type="button" id="recStartTab" title="영상이 이 페이지에서 재생되지 않을 때">↗ 팝업 창으로 추출</button>
+        <button class="btn red" type="button" id="recStop" disabled>■ 추출 끝내기</button>
+      </div>
+      <div class="rec" id="recBox"><span class="dot"></span><span id="recTime">00:00</span><div class="meter"><i id="recLevel"></i></div></div>
+      <details class="adv" id="ytFallback">
+        <summary>영상이 여기서 재생되지 않나요? (팝업 창으로 추출하기)</summary>
+        <p class="hint">가요·뮤직비디오·가사 영상은 음원 저작권자가 <b>다른 사이트에서의 재생을 막아 둔 경우가 많아요</b>. 이런 영상은 어떤 사이트에 넣어도 재생되지 않아요. 그럴 땐 <b>↗ 팝업 창으로 추출</b>을 쓰세요.</p>
+        <ol class="steps">
+          <li><b>↗ 팝업 창으로 추출</b>을 누르면 작은 유튜브 창이 열리고 공유 창이 떠요.</li>
+          <li>공유 창의 'Chrome 탭' 목록에서 <b>방금 열린 유튜브</b>를 고르고 '탭 오디오도 공유'를 켠 뒤 <b>공유</b>.</li>
+          <li>유튜브 창에서 영상이 재생되지 않으면 재생 버튼을 눌러 주세요. 끝 시간을 정해 두면 그 길이만큼 지나 <b>자동으로 멈춰요</b>.</li>
+        </ol>
+      </details>
+      <p class="hint">PC용 크롬·엣지에서 동작해요 (모바일 브라우저는 탭 소리 추출을 지원하지 않아요). 추출한 소리는 이 브라우저 안에서만 처리되고 어디에도 전송되지 않아요.</p>
+    </div>
+
+    <div class="box panel" id="panel-audio">
+      <label class="f" for="audioFile">음원 파일 선택</label>
+      <input type="file" id="audioFile" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac">
+      <p class="hint" id="audioInfo">피아노 커버, 반주(MR), 보컬만 있는 음원처럼 악기가 적을수록 정확해요.</p>
+    </div>
+
+    <!-- 공통: 음원 구간 선택 -->
+    <div class="box" id="editor" style="display:none;margin-top:12px">
+      <div class="row" style="justify-content:space-between">
+        <p class="sec-title" style="margin:0">변환할 구간 선택</p>
+        <span class="hint" style="margin:0" id="edInfo"></span>
+      </div>
+      <div class="wave-wrap" id="waveWrap">
+        <canvas id="wave"></canvas>
+        <div class="sel" id="waveSel"><span class="hdl l"></span><span class="hdl r"></span></div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+      <p class="hint" style="margin-top:6px">파형을 드래그하면 구간이 선택돼요. 양 끝의 손잡이를 끌어서 조절할 수 있어요.</p>
+      <div class="grid3" style="margin-top:10px">
+        <div><label class="f" for="selStart">시작 (분:초)</label><input type="text" id="selStart" inputmode="decimal" value="0:00.0"></div>
+        <div><label class="f" for="selEnd">끝 (분:초)</label><input type="text" id="selEnd" inputmode="decimal" value="0:00.0"></div>
+        <div><label class="f">선택 길이</label><div class="sel-len" id="selLen">0초</div></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="button" id="selPlay">▶ 선택 구간 듣기</button>
+        <button class="btn" type="button" id="selAll">전체 선택</button>
+        <button class="btn" type="button" id="mp3Btn">⬇ 선택 구간 MP3로 저장</button>
+      </div>
+    </div>
+
+    <div class="box panel" id="panel-midi">
+      <label class="f" for="midiFile">MIDI 파일 선택 (.mid)</label>
+      <input type="file" id="midiFile" accept=".mid,.midi,audio/midi">
+      <p class="hint">MIDI는 음 높이·박자가 정확해서 가장 깔끔한 악보가 나와요. 곡 이름 + "midi"로 검색하면 많이 찾을 수 있어요.</p>
+      <div class="midi-list" id="midiList">
+        <label class="f" style="margin-top:6px">포함할 MIDI 트랙</label>
+        <div id="midiItems"></div>
+        <label class="f" for="midiMode" style="margin-top:10px">파트 나누는 방식</label>
+        <select id="midiMode">
+          <option value="auto">자동 — 높은 음을 멜로디로, 나머지를 화음으로</option>
+          <option value="map">트랙 그대로 — 체크한 MIDI 트랙 순서대로 멜로디·화음1·화음2…</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 설정 -->
+  <div class="sec">
+    <p class="sec-title"><span class="num">3</span>출력 화음 수 <span class="badge" style="margin-left:auto">현재 <b id="chordValue">3</b>파트</span></p>
+    <div class="chords" id="chords"></div>
+    <p class="hint">멜로디 1개 + 화음 최대 5개 = 악보 1장에 최대 6파트. 3화음 악기로 혼자 연주하면 앞의 3파트까지 연주돼요.</p>
+
+    <details class="adv" open>
+      <summary>세부 설정</summary>
+      <div class="grid3" style="margin-top:12px">
+        <div>
+          <label class="f" for="bpm">템포 (BPM)</label>
+          <input type="number" id="bpm" min="32" max="255" placeholder="자동">
+          <p class="hint" id="bpmHint">비워두면 자동으로 찾아요.</p>
+        </div>
+        <div>
+          <label class="f" for="grid">박자 정밀도</label>
+          <select id="grid">
+            <option value="8">8분음표 (짧은 악보)</option>
+            <option value="4" selected>16분음표 (권장)</option>
+            <option value="2">32분음표 (정밀, 글자 많음)</option>
+          </select>
+        </div>
+        <div>
+          <label class="f" for="transpose">조옮김 (반음)</label>
+          <input type="number" id="transpose" min="-24" max="24" step="1" value="0">
+          <p class="hint">12 = 한 옥타브 위</p>
+        </div>
+        <div>
+          <label class="f" for="volMel">멜로디 볼륨 (1~15)</label>
+          <input type="number" id="volMel" min="1" max="15" value="13">
+        </div>
+        <div>
+          <label class="f" for="volAcc">화음 볼륨 (1~15)</label>
+          <input type="number" id="volAcc" min="1" max="15" value="10">
+        </div>
+        <div>
+          <label class="f" for="charLimit">파트당 글자수 상한</label>
+          <input type="number" id="charLimit" min="100" max="2400" value="2400">
+        </div>
+      </div>
+      <div class="grid3 audio-only" style="margin-top:12px">
+        <div>
+          <label class="f" for="sens">AI 음 감지 민감도</label>
+          <select id="sens">
+            <option value="low">낮음 (확실한 음만)</option>
+            <option value="mid" selected>보통</option>
+            <option value="high">높음 (작은 음까지)</option>
+          </select>
+        </div>
+        <div>
+          <label class="f" for="lowNote">가장 낮은 음</label>
+          <select id="lowNote"></select>
+        </div>
+        <div>
+          <label class="f" for="highNote">가장 높은 음</label>
+          <select id="highNote"></select>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:grid;gap:8px">
+        <label class="chk"><input type="checkbox" id="fit" checked><span>글자수를 넘으면 상한에 맞게 곡 뒷부분을 자동으로 잘라요</span></label>
+        <label class="chk"><input type="checkbox" id="pad" checked><span>모든 파트 길이를 똑같이 맞춰요 (합주할 때 한 파트만 먼저 반복되는 문제 방지)</span></label>
+        <label class="chk"><input type="checkbox" id="dyn"><span>음 세기(강약)를 볼륨에 반영해요 (글자수 증가)</span></label>
+        <label class="chk audio-only"><input type="checkbox" id="melodia"><span>세밀 분석 — 길게 이어지는 음을 더 찾아요 (분석이 느려질 수 있음)</span></label>
+      </div>
+    </details>
+  </div>
+
+  <div class="sec">
+    <button class="btn gold big" type="button" id="convertBtn">♪ MML 악보 만들기</button>
+    <p class="hint" style="text-align:center" id="convertHint">설정을 바꾼 뒤 다시 누르면 분석을 반복하지 않고 바로 다시 만들어요.</p>
+  </div>
+
+  <div id="progress"><div class="spin"></div><p id="progText">준비 중…</p><div class="bar"><i id="progBar"></i></div></div>
+  <div class="err" id="err"></div>
+
+  <!-- 결과 -->
+  <div id="result">
+    <div class="res-head">
+      <div>
+        <h3>변환 완료: <span id="resTitle">곡 제목</span></h3>
+        <p id="resSub"></p>
+      </div>
+      <div class="row">
+        <button class="btn" type="button" id="playBtn">▶ 미리 듣기</button>
+        <button class="btn" type="button" id="dlBtn">⬇ 저장(.txt)</button>
+        <button class="btn gold" type="button" id="copyAll">인게임 클립보드용 전체 복사</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="warn" id="warn"></div>
+    <div class="track">
+      <div class="track-h"><span class="t">전체 악보 코드<small>MML@ … ;</small></span>
+        <span class="row"><span class="cnt" id="fullCnt"></span><button class="btn" type="button" id="copyFull">복사</button></span></div>
+      <textarea id="fullMml" rows="5" readonly></textarea>
+    </div>
+    <div id="tracks"></div>
+  </div>
+
+  <div class="help">
+    <h4>인게임에 넣는 방법</h4>
+    <ul>
+      <li><b>전체 복사</b> → 마비노기 모바일 작곡 화면에서 <b>'클립보드에서 읽기'</b>를 누르면 모든 파트가 한 번에 들어가요.</li>
+      <li>파트마다 넣고 싶다면 아래 각 파트의 <b>복사</b> 버튼을 쓰세요.</li>
+    </ul>
+    <h4>합주 팁</h4>
+    <ul>
+      <li>처음 연주를 시작한 사람이 N화음 악기를 들면 앞에서부터 N개 파트를 가져가고, 이후 합류하는 사람은 다음 파트를 1개씩 가져가요.</li>
+      <li>6파트를 모두 연주하려면: 3화음 악기로 시작(멜로디+화음1+화음2) + 합주자 3명(화음3·4·5).</li>
+      <li>같은 악기가 같은 음을 동시에 내면 소리가 끊길 수 있어요. 파트마다 다른 악기를 쓰면 좋아요.</li>
+    </ul>
+    <h4>정확도를 높이려면</h4>
+    <ul>
+      <li>AI 채보는 원곡 그대로보다 <b>피아노 커버 / 오르골 / 기타 커버</b> 영상에서 훨씬 잘 돼요. 드럼과 보컬이 섞인 원곡은 음이 지저분해질 수 있어요.</li>
+      <li>템포가 어긋나 들리면 원곡 BPM을 직접 입력해 보세요. MIDI 파일이 있다면 MIDI가 가장 정확해요.</li>
+      <li>개인 연주용으로만 사용하고, 만든 악보를 공유할 땐 원곡 저작권을 존중해 주세요.</li>
+    </ul>
+  </div>
+</div>
+</div>
+</main>
+
+<footer>© 2026 에린 음유시인 보관소. Designed for Mabinogi Mobile Players.</footer>
+
+<script>
+'use strict';
+/* =========================================================
+   상수
+   ========================================================= */
+const MAX_TRACKS = 6;
+const MIN_MIDI = 24;   // o1c
+const MAX_MIDI = 107;  // o7b  (8옥타브는 인게임에서 소리가 안 나는 경우가 있어 제외)
+const NOTE_NAMES = ['c','c+','d','d+','e','f','f+','g','g+','a','a+','b'];
+const NOTE_LABEL = ['도','도#','레','레#','미','파','파#','솔','솔#','라','라#','시'];
+const TF_URLS = [
+  'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.22.0/tf.min.js',
+  'https://unpkg.com/@tensorflow/tfjs@4.22.0/dist/tf.min.js'
+];
+const MODEL_URLS = [
+  'https://cdn.jsdelivr.net/npm/@spotify/basic-pitch@1.0.1/model/model.json',
+  'https://unpkg.com/@spotify/basic-pitch@1.0.1/model/model.json'
+];
+// basic-pitch 모델 상수 (spotify/basic-pitch-ts 와 동일)
+const SR = 22050, FFT_HOP = 256, FPS = Math.floor(SR / FFT_HOP);
+const WIN_SAMPLES = SR * 2 - FFT_HOP;            // 43844
+const OVERLAP_FRAMES = 30, HALF_OVERLAP = 15;
+const OVERLAP_SAMPLES = OVERLAP_FRAMES * FFT_HOP; // 7680
+const HOP_SAMPLES = WIN_SAMPLES - OVERLAP_SAMPLES;
+const ANNOT_N_FRAMES = FPS * 2;
+const WINDOW_OFFSET = (FFT_HOP / SR) * (ANNOT_N_FRAMES - WIN_SAMPLES / FFT_HOP) + 0.0018;
+const N_PITCH = 88, MIDI_OFFSET = 21;
+
+/* =========================================================
+   상태
+   ========================================================= */
+const state = {
+  source: 'youtube',
+  tracks: 3,
+  audioFile: null, audioBuffer: null,
+  recorded: null,                 // 녹음한 AudioBuffer
+  analysis: null,                 // {key, frames, onsets, duration}
+  midi: null,                     // 파싱된 MIDI
+  last: null,                     // 마지막 결과
+  sel: { youtube: null, audio: null }, // 선택 구간 (초)
+};
+const $ = (id) => document.getElementById(id);
+
+/* =========================================================
+   UI: 탭, 화음 버튼, 음역 선택
+   ========================================================= */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setSource(t.dataset.src)));
+function setSource(src) {
+  state.source = src;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.src === src));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + src));
+  document.querySelectorAll('.audio-only').forEach(el => el.style.display = src === 'midi' ? 'none' : '');
+  refreshEditor();
+}
+
+const CHORD_LABELS = {1: '멜로디만', 3: '독주', 6: '합주'};
+function renderChords() {
+  const box = $('chords'); box.innerHTML = '';
+  for (let n = 1; n <= MAX_TRACKS; n++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chord' + (n === state.tracks ? ' on' : '');
+    b.innerHTML = n + (CHORD_LABELS[n] ? `<small>${CHORD_LABELS[n]}</small>` : '');
+    b.onclick = () => { state.tracks = n; $('chordValue').textContent = n; renderChords(); };
+    box.appendChild(b);
+  }
+}
+renderChords();
+
+function midiName(m) { return `${NOTE_LABEL[m % 12]}${Math.floor(m / 12) - 1} (o${Math.floor(m / 12) - 1}${NOTE_NAMES[m % 12]})`; }
+(function fillRange() {
+  const lo = $('lowNote'), hi = $('highNote');
+  for (let m = MIN_MIDI; m <= MAX_MIDI; m += 1) {
+    if (m % 12 !== 0 && m !== MAX_MIDI) continue;
+    lo.add(new Option(midiName(m), m)); hi.add(new Option(midiName(m), m));
+  }
+  lo.value = '36'; hi.value = String(MAX_MIDI);
+})();
+
+/* =========================================================
+   유튜브
+   ========================================================= */
+function ytId(url) {
+  const m = String(url).trim().match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+/* --- 사이트 안 유튜브 플레이어 (YouTube IFrame API) --- */
+if (location.protocol === 'file:') $('fileWarn').style.display = 'block';
+const yt = { player: null, ready: false, id: null, apiPromise: null, failed: false };
+function loadYTApi() {
+  if (!yt.apiPromise) yt.apiPromise = new Promise((res, rej) => {
+    if (window.YT && YT.Player) return res(window.YT);
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) try { prev(); } catch (e) {} res(window.YT); };
+    loadScript('https://www.youtube.com/iframe_api').catch(() => { yt.apiPromise = null; rej(new Error('유튜브 플레이어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')); });
+  });
+  return yt.apiPromise;
+}
+function ytMsg(text) { const m = $('ytMsg'); m.textContent = text || ''; m.style.display = text ? 'block' : 'none'; }
+function ytStartSec() { const v = parseClock($('ytStart').value); return isFinite(v) && v > 0 ? v : 0; }
+function ytEndSec() { const v = parseClock($('ytEnd').value); return isFinite(v) && v > 0 ? v : null; }
+let ytTimer = null;
+$('ytUrl').addEventListener('input', () => { clearTimeout(ytTimer); ytTimer = setTimeout(setupPlayer, 350); });
+async function setupPlayer() {
+  const id = ytId($('ytUrl').value);
+  if (!id) { $('ytBox').style.display = 'none'; ytMsg(''); return; }
+  if (id === yt.id && yt.player) return;
+  yt.id = id; yt.failed = false; ytMsg('');
+  $('ytBox').style.display = 'block';
+  try { await loadYTApi(); } catch (e) { ytMsg(e.message); return; }
+  if (yt.player && yt.ready) { yt.player.cueVideoById({ videoId: id, startSeconds: ytStartSec() }); return; }
+  if (yt.player) return; // 준비 중이면 onReady 에서 처리
+  // 유튜브 정책: 임베드 플레이어 요청에 HTTP Referer 가 있어야 재생됨(오류 153 방지).
+  // iframe 을 직접 만들어 referrerpolicy 와 origin 을 명시한 뒤 IFrame API 에 연결한다.
+  const q = new URLSearchParams({ enablejsapi: '1', playsinline: '1', rel: '0' });
+  if (/^https?:$/.test(location.protocol)) { q.set('origin', location.origin); q.set('widget_referrer', location.href); }
+  const ifr = document.createElement('iframe');
+  ifr.id = 'ytPlayer';
+  ifr.src = `https://www.youtube.com/embed/${id}?${q}`;
+  ifr.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+  ifr.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+  ifr.setAttribute('allowfullscreen', '');
+  ifr.title = 'YouTube 영상';
+  $('ytPlayer').replaceWith(ifr);
+  clearTimeout(yt.watchdog);
+  yt.watchdog = setTimeout(() => {
+    if (!yt.ready) { ytMsg('영상 플레이어가 응답하지 않아요. 영상이 안 보이면 "↗ 팝업 창으로 추출"을 써 주세요.'); $('ytFallback').open = true; }
+  }, 10000);
+  yt.player = new YT.Player(ifr, {
+    events: {
+      onReady: () => { yt.ready = true; clearTimeout(yt.watchdog); if (yt.player.getVideoData().video_id !== yt.id) yt.player.cueVideoById(yt.id); fillTitleFromVideo(); },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.CUED || e.data === YT.PlayerState.PLAYING) fillTitleFromVideo();
+        if (e.data === YT.PlayerState.PLAYING && rec.stream && rec.mode === 'here') ytMsg('');
+        if (e.data === YT.PlayerState.ENDED && rec.stream && rec.mode === 'here') stopRecording();
+      },
+      onError: (e) => {
+        yt.failed = true;
+        const why = (e.data === 101 || e.data === 150) ? '이 영상은 주인이 다른 사이트에서의 재생을 막아 두었어요.'
+          : e.data === 100 ? '영상을 찾을 수 없어요. 링크를 확인해 주세요.'
+          : e.data === 153 || location.protocol === 'file:' ? '유튜브가 이 페이지의 주소 정보(Referer)를 받지 못해 재생을 막았어요(오류 153). START.bat으로 열거나 인터넷 주소로 올린 사이트에서 사용해 주세요.'
+          : '이 영상은 다른 사이트에서 재생할 수 없게 설정되어 있어요 (가요·뮤직비디오에서 흔해요).';
+        ytMsg(why + ' "↗ 팝업 창으로 추출" 버튼으로 추출해 주세요.');
+        $('ytFallback').open = true;
+        if (rec.stream && rec.mode === 'here') stopRecording();
+      }
+    }
+  });
+}
+function fillTitleFromVideo() {
+  try {
+    const d = yt.player.getVideoData(); if (!d || !d.title) return;
+    if (!$('title').value.trim()) $('title').value = d.title;
+    if (!$('artist').value.trim() && d.author) $('artist').value = d.author.replace(/\s*-\s*Topic$/i, '');
+  } catch (e) {}
+}
+['ytStartNow', 'ytEndNow'].forEach(id => $(id).addEventListener('click', () => {
+  if (!yt.player || !yt.ready) return;
+  $(id === 'ytStartNow' ? 'ytStart' : 'ytEnd').value = fmtClock(yt.player.getCurrentTime());
+}));
+['ytStart', 'ytEnd'].forEach(id => $(id).addEventListener('change', () => {
+  const v = parseClock($(id).value); if (String($(id).value).trim() && !isFinite(v)) $(id).value = '';
+  else if (isFinite(v)) $(id).value = fmtClock(v);
+}));
+
+const rec = { stream: null, ctx: null, proc: null, chunks: [], len: 0, timer: null, t0: 0, mode: null };
+$('recStart').addEventListener('click', () => startRecording('here'));
+$('recStartTab').addEventListener('click', () => startRecording('tab'));
+$('recStop').addEventListener('click', () => stopRecording());
+
+async function startRecording(mode) {
+  hideError();
+  if (rec.stream) return;
+  const id = ytId($('ytUrl').value);
+  if (!id) return showError('올바른 유튜브 링크를 넣어 주세요. 예: https://youtu.be/xxxxxxxxxxx');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    return showError('이 브라우저는 탭 소리 추출을 지원하지 않아요. PC용 크롬 또는 엣지에서 열어 주세요.\n(또는 "음원 파일" 탭에서 파일을 직접 올려 주세요.)');
+  }
+  const st = ytStartSec(), en = ytEndSec();
+  if (en != null && en <= st + 1) return showError('끝 시간은 시작 시간보다 1초 이상 뒤여야 해요.');
+  if (mode === 'here' && (!yt.player || !yt.ready)) {
+    if (yt.failed) return showError('이 영상은 사이트 안에서 재생되지 않아요. "↗ 팝업 창으로 추출" 버튼을 써 주세요.');
+    return showError('영상이 아직 준비되지 않았어요. 영상이 계속 안 보이면 "↗ 팝업 창으로 추출" 버튼을 써 주세요.');
+  }
+  if (mode === 'tab') {
+    const w = 720, h = 460, left = Math.max(0, (screen.availWidth || 1280) - w - 40), top = 60;
+    const pop = window.open('https://www.youtube.com/watch?v=' + id + (st ? '&t=' + Math.floor(st) + 's' : ''), 'erin_yt_popup', `popup=yes,width=${w},height=${h},left=${left},top=${top}`);
+    if (!pop) return showError('팝업이 차단됐어요. 주소창 오른쪽의 팝업 차단 아이콘을 눌러 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.');
+    rec.popup = pop;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getDisplayMedia(mode === 'here' ? {
+      video: { displaySurface: 'browser', frameRate: 1 },
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, suppressLocalAudioPlayback: false },
+      preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude', systemAudio: 'exclude'
+    } : {
+      video: { frameRate: 1 },
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      preferCurrentTab: false, selfBrowserSurface: 'exclude', systemAudio: 'include', surfaceSwitching: 'include'
+    });
+  } catch (e) {
+    return showError('추출이 취소되었어요. 다시 누르고 ' + (mode === 'here' ? "'이 탭'을" : '유튜브 탭을') + " 선택한 뒤 '탭 오디오도 공유'를 켜 주세요.");
+  }
+  const aTracks = stream.getAudioTracks();
+  if (!aTracks.length) {
+    stream.getTracks().forEach(t => t.stop());
+    return showError("소리가 공유되지 않았어요. 공유 창 아래쪽의 '탭 오디오도 공유'를 켜고 다시 시도해 주세요.");
+  }
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = ctx.createMediaStreamSource(new MediaStream(aTracks));
+  const proc = ctx.createScriptProcessor(4096, 2, 1);
+  const mute = ctx.createGain(); mute.gain.value = 0;
+  rec.chunks = []; rec.len = 0;
+  proc.onaudioprocess = (e) => {
+    if (!rec.stream) return;
+    const ib = e.inputBuffer, n = ib.length, ch = ib.numberOfChannels;
+    const out = new Float32Array(n);
+    let peak = 0;
+    for (let c = 0; c < ch; c++) { const d = ib.getChannelData(c); for (let i = 0; i < n; i++) out[i] += d[i] / ch; }
+    for (let i = 0; i < n; i++) { const a = Math.abs(out[i]); if (a > peak) peak = a; }
+    rec.chunks.push(out); rec.len += n;
+    $('recLevel').style.width = Math.min(100, peak * 140) + '%';
+    if (rec.len / ctx.sampleRate > 600) stopRecording(); // 10분 제한
+  };
+  src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  aTracks[0].addEventListener('ended', () => { if (rec.stream) stopRecording(); });
+  Object.assign(rec, { stream, ctx, proc, t0: Date.now(), mode, endAt: en });
+  $('recBox').style.display = 'flex';
+  $('recStart').disabled = true; $('recStartTab').disabled = true; $('recStop').disabled = false;
+  if (mode === 'here') {
+    // 시작 위치로 이동해서 자동 재생
+    try { yt.player.seekTo(st, true); yt.player.playVideo(); } catch (e) {}
+    setTimeout(() => {
+      if (rec.stream && rec.mode === 'here' && yt.player.getPlayerState() !== YT.PlayerState.PLAYING) ytMsg('영상이 자동으로 시작되지 않으면 영상의 재생 버튼을 눌러 주세요. 추출은 이미 진행 중이에요.');
+    }, 3000);
+  }
+  if (mode === 'tab') ytMsg('');
+  rec.timer = setInterval(() => {
+    const s = Math.floor((Date.now() - rec.t0) / 1000);
+    if (rec.mode === 'tab' && rec.endAt != null && s >= rec.endAt - st + 2) { stopRecording(); return; }
+    let txt = '추출 중 ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    if (rec.mode === 'here' && yt.ready) {
+      const cur = yt.player.getCurrentTime();
+      txt += ' · 영상 ' + fmtClock(cur).replace(/\.\d$/, '') + (rec.endAt != null ? ' / 끝 ' + fmtClock(rec.endAt).replace(/\.\d$/, '') : '');
+      if (rec.endAt != null && cur >= rec.endAt) stopRecording();
+    }
+    $('recTime').textContent = txt;
+  }, 200);
+}
+
+async function stopRecording() {
+  if (!rec.stream) return;
+  clearInterval(rec.timer);
+  rec.stream.getTracks().forEach(t => t.stop());
+  try { rec.proc.disconnect(); } catch (e) {}
+  const sr = rec.ctx.sampleRate;
+  rec.ctx.close();
+  rec.stream = null;
+  if (rec.mode === 'here' && yt.player && yt.ready) { try { yt.player.pauseVideo(); } catch (e) {} }
+  if (rec.mode === 'tab' && rec.popup) { try { rec.popup.close(); } catch (e) {} rec.popup = null; }
+  $('recBox').style.display = 'none';
+  $('recStart').disabled = false; $('recStartTab').disabled = false; $('recStop').disabled = true;
+  if (rec.len < sr * 1) return showError('추출된 소리가 너무 짧아요. 영상이 재생되는 상태로 추출해 주세요.');
+  // 이어 붙이고 앞뒤 무음 자르기
+  const all = new Float32Array(rec.len); let o = 0;
+  for (const c of rec.chunks) { all.set(c, o); o += c.length; }
+  rec.chunks = [];
+  let a = 0, b = all.length - 1; const th = 0.01;
+  while (a < all.length && Math.abs(all[a]) < th) a++;
+  while (b > a && Math.abs(all[b]) < th) b--;
+  if (b - a < sr * 0.5) return showError("추출된 소리가 거의 없어요. '탭 오디오도 공유'가 켜져 있었는지, 영상 소리(음소거·볼륨)가 켜져 있었는지 확인해 주세요.");
+  a = Math.max(0, a - Math.floor(sr * 0.05));
+  const trimmed = all.slice(a, Math.min(all.length, b + Math.floor(sr * 0.3)));
+  const tmp = new OfflineAudioContext(1, trimmed.length, sr);
+  const buf = tmp.createBuffer(1, trimmed.length, sr);
+  buf.copyToChannel(trimmed, 0);
+  state.recorded = buf; state.recordedId = Date.now();
+  state.analysis = null;
+  state.sel.youtube = { s: 0, e: buf.duration };
+  refreshEditor();
+  $('editor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* =========================================================
+   음원 파일
+   ========================================================= */
+$('audioFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  hideError();
+  state.audioFile = f; state.audioBuffer = null; state.analysis = null;
+  $('audioInfo').textContent = '파일 읽는 중…';
+  try {
+    state.audioBuffer = await decodeFile(f);
+    const d = state.audioBuffer.duration;
+    $('audioInfo').textContent = `${f.name} · 길이 ${fmtTime(d)}` + (d > 240 ? ' · 긴 곡은 분석에 시간이 걸려요. 원하는 구간만 선택하면 빨라요.' : '');
+    state.sel.audio = { s: 0, e: d };
+    refreshEditor();
+  } catch (err) {
+    state.audioFile = null;
+    $('audioInfo').textContent = '';
+    showError('이 파일을 읽지 못했어요. mp3, wav, m4a, ogg 파일인지 확인해 주세요.');
+  }
+});
+async function decodeFile(f) {
+  const ab = await f.arrayBuffer();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  try { return await ctx.decodeAudioData(ab); } finally { ctx.close(); }
+}
+function fmtTime(s) { s = Math.round(s); return Math.floor(s / 60) + '분 ' + (s % 60) + '초'; }
+
+/* =========================================================
+   MIDI 파일
+   ========================================================= */
+$('midiFile').addEventListener('change', async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  hideError();
+  try {
+    state.midi = parseMidi(await f.arrayBuffer());
+    state.midi.fileName = f.name;
+    renderMidiTracks();
+  } catch (err) {
+    state.midi = null; $('midiList').style.display = 'none';
+    showError('MIDI 파일을 읽지 못했어요: ' + err.message);
+  }
+});
+function renderMidiTracks() {
+  const box = $('midiItems'); box.innerHTML = '';
+  state.midi.tracks.forEach((t, i) => {
+    if (!t.notes.length) return;
+    const drum = t.channels.size === 1 && t.channels.has(9);
+    const lo = Math.min(...t.notes.map(n => n.pitch)), hi = Math.max(...t.notes.map(n => n.pitch));
+    const el = document.createElement('label');
+    el.className = 'item chk';
+    el.innerHTML = `<span><input type="checkbox" data-trk="${i}" ${drum ? '' : 'checked'}> ${escapeHtml(t.name || '트랙 ' + (i + 1))}${drum ? ' (드럼)' : ''}</span><span class="meta">음표 ${t.notes.length}개 · ${NOTE_LABEL[lo % 12]}${Math.floor(lo / 12) - 1}~${NOTE_LABEL[hi % 12]}${Math.floor(hi / 12) - 1}</span>`;
+    box.appendChild(el);
+  });
+  $('midiList').style.display = 'block';
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function parseMidi(buf) {
+  const d = new DataView(buf); let p = 0;
+  const str4 = () => String.fromCharCode(d.getUint8(p), d.getUint8(p + 1), d.getUint8(p + 2), d.getUint8(p + 3));
+  const vlq = () => { let v = 0, b; do { b = d.getUint8(p++); v = (v << 7) | (b & 0x7f); } while (b & 0x80); return v; };
+  if (str4() !== 'MThd') throw new Error('MIDI 파일 형식이 아니에요.');
+  const hlen = d.getUint32(p + 4); const ntrk = d.getUint16(p + 10); const div = d.getUint16(p + 12);
+  if (div & 0x8000) throw new Error('SMPTE 시간 형식 MIDI는 지원하지 않아요.');
+  p = 8 + hlen;
+  const tracks = [], tempos = [];
+  for (let t = 0; t < ntrk && p + 8 <= d.byteLength; t++) {
+    const id = str4(); const len = d.getUint32(p + 4); p += 8;
+    const end = Math.min(d.byteLength, p + len);
+    if (id !== 'MTrk') { p = end; t--; continue; }
+    let tick = 0, running = 0, name = '';
+    const active = new Map(), notes = [], channels = new Set();
+    while (p < end) {
+      tick += vlq();
+      let st = d.getUint8(p);
+      if (st < 0x80) { st = running; } else { p++; if (st < 0xF0) running = st; }
+      if (st === 0xFF) {
+        const type = d.getUint8(p++); const l = vlq();
+        if (type === 0x51 && l >= 3) tempos.push({ tick, bpm: 60e6 / ((d.getUint8(p) << 16) | (d.getUint8(p + 1) << 8) | d.getUint8(p + 2)) });
+        if (type === 0x03) { try { name = new TextDecoder().decode(new Uint8Array(buf, p, l)).replace(/\0/g, '').trim(); } catch (e) {} }
+        p += l;
+      } else if (st === 0xF0 || st === 0xF7) {
+        p += vlq();
+      } else {
+        const hi = st & 0xF0, ch = st & 0x0F;
+        if (hi === 0xC0 || hi === 0xD0) { p += 1; continue; }
+        const a = d.getUint8(p), b = d.getUint8(p + 1); p += 2;
+        const key = ch * 128 + a;
+        if (hi === 0x90 && b > 0) {
+          if (!active.has(key)) active.set(key, []);
+          active.get(key).push({ tick, vel: b });
+        } else if (hi === 0x80 || (hi === 0x90 && b === 0)) {
+          const q = active.get(key);
+          if (q && q.length) { const on = q.shift(); if (tick > on.tick) { notes.push({ tick: on.tick, end: tick, pitch: a, vel: on.vel / 127, ch }); channels.add(ch); } }
+        }
+      }
+    }
+    for (const [key, q] of active) for (const on of q) if (tick > on.tick) { notes.push({ tick: on.tick, end: tick, pitch: key % 128, vel: on.vel / 127, ch: Math.floor(key / 128) }); channels.add(Math.floor(key / 128)); }
+    notes.sort((x, y) => x.tick - y.tick || y.pitch - x.pitch);
+    tracks.push({ name, notes, channels });
+    p = end;
+  }
+  // format 0 처럼 한 트랙에 여러 채널이 섞여 있으면 채널별로 나눠 보여줌
+  const out = [];
+  for (const t of tracks) {
+    if (t.channels.size > 1) {
+      for (const ch of [...t.channels].sort((a, b) => a - b)) {
+        out.push({ name: `${t.name ? t.name + ' ' : ''}채널 ${ch + 1}`, notes: t.notes.filter(n => n.ch === ch), channels: new Set([ch]) });
+      }
+    } else out.push(t);
+  }
+  tempos.sort((a, b) => a.tick - b.tick);
+  return { ppq: div, tracks: out, tempos };
+}
+
+/* =========================================================
+   AI 채보 (Spotify basic-pitch 모델, 브라우저에서 실행)
+   ========================================================= */
+let tfPromise = null, modelPromise = null;
+function loadScript(url) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = url; s.onload = res; s.onerror = () => { s.remove(); rej(new Error(url)); }; document.head.appendChild(s); });
+}
+function loadTF() {
+  if (!tfPromise) tfPromise = (async () => {
+    if (!window.tf) {
+      for (const u of TF_URLS) { try { await loadScript(u); if (window.tf) break; } catch (e) {} }
+    }
+    if (!window.tf) throw new Error('AI 엔진(TensorFlow.js)을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.');
+    try { await tf.setBackend('webgl'); } catch (e) { await tf.setBackend('cpu'); }
+    await tf.ready();
+    return window.tf;
+  })().catch(e => { tfPromise = null; throw e; });
+  return tfPromise;
+}
+function loadModel() {
+  if (!modelPromise) modelPromise = (async () => {
+    const tf = await loadTF();
+    let lastErr;
+    for (const u of MODEL_URLS) { try { return await tf.loadGraphModel(u); } catch (e) { lastErr = e; } }
+    throw new Error('AI 채보 모델을 내려받지 못했어요. 인터넷 연결을 확인해 주세요. (' + (lastErr && lastErr.message) + ')');
+  })().catch(e => { modelPromise = null; throw e; });
+  return modelPromise;
+}
+
+async function toMono22k(buffer, startSec, endSec) {
+  const dur = Math.max(0.5, endSec - startSec);
+  const len = Math.ceil(dur * SR);
+  const off = new OfflineAudioContext(1, len, SR);
+  const src = off.createBufferSource(); src.buffer = buffer; src.connect(off.destination);
+  src.start(0, startSec, dur);
+  const r = await off.startRendering();
+  const data = r.getChannelData(0);
+  // 음량 정규화
+  let peak = 0; for (let i = 0; i < data.length; i++) { const a = Math.abs(data[i]); if (a > peak) peak = a; }
+  if (peak > 0.0001 && peak < 0.9) { const g = 0.9 / peak; for (let i = 0; i < data.length; i++) data[i] *= g; }
+  return data;
+}
+
+async function runBasicPitch(samples, onProgress) {
+  const tf = await loadTF();
+  const model = await loadModel();
+  const half = OVERLAP_SAMPLES / 2;
+  const padded = new Float32Array(half + samples.length); padded.set(samples, half);
+  const nBatches = Math.ceil(padded.length / HOP_SAMPLES);
+  const nOut = Math.floor(samples.length * (FPS / SR));
+  const frames = [], onsets = [];
+  let got = 0;
+  for (let i = 0; i < nBatches && got < nOut; i++) {
+    onProgress(i / nBatches);
+    const chunk = new Float32Array(WIN_SAMPLES);
+    chunk.set(padded.subarray(i * HOP_SAMPLES, Math.min(padded.length, i * HOP_SAMPLES + WIN_SAMPLES)));
+    const input = tf.tensor(chunk, [1, WIN_SAMPLES, 1]);
+    const outs = model.execute(input, ['Identity_1', 'Identity_2']); // frames, onsets
+    const T = outs[0].shape[1];
+    const fData = await outs[0].data(), oData = await outs[1].data();
+    tf.dispose([input, ...outs]);
+    const rows = T - 2 * HALF_OVERLAP;
+    const take = Math.min(rows, nOut - got);
+    for (let r = 0; r < take; r++) {
+      const base = (r + HALF_OVERLAP) * N_PITCH;
+      frames.push(fData.slice(base, base + N_PITCH));
+      onsets.push(oData.slice(base, base + N_PITCH));
+    }
+    got += take;
+    await new Promise(r => setTimeout(r, 0));
+  }
+  onProgress(1);
+  return { frames, onsets };
+}
+
+// basic-pitch outputToNotesPoly 를 typed array 로 옮긴 것
+function framesToNotes(frames, onsets, opt) {
+  const nF = frames.length; if (nF < 3) return [];
+  const { onsetThresh, frameThresh, minNoteLen, melodia } = opt;
+  const energyTol = 11;
+  // 1) 추정 onset
+  let onsetMax = 0, diffMax = 0;
+  const diff = new Array(nF);
+  for (let r = 0; r < nF; r++) {
+    const dr = new Float32Array(N_PITCH), f = frames[r], o = onsets[r];
+    for (let c = 0; c < N_PITCH; c++) {
+      if (o[c] > onsetMax) onsetMax = o[c];
+      if (r >= 2) {
+        const m = Math.max(0, Math.min(f[c] - frames[r - 1][c], f[c] - frames[r - 2][c]));
+        dr[c] = m; if (m > diffMax) diffMax = m;
+      }
+    }
+    diff[r] = dr;
+  }
+  const inf = new Array(nF);
+  const scale = diffMax > 0 ? onsetMax / diffMax : 0;
+  for (let r = 0; r < nF; r++) {
+    const a = new Float32Array(N_PITCH);
+    for (let c = 0; c < N_PITCH; c++) a[c] = Math.max(onsets[r][c], diff[r][c] * scale);
+    inf[r] = a;
+  }
+  // 2) 시간축 피크 → 음 시작점
+  const starts = [];
+  for (let r = 0; r < nF; r++) {
+    for (let c = 0; c < N_PITCH; c++) {
+      const v = inf[r][c];
+      if (v <= onsetThresh) continue;
+      if (r > 0 && !(v > inf[r - 1][c])) continue;
+      if (r < nF - 1 && !(v > inf[r + 1][c])) continue;
+      starts.push(r * N_PITCH + c);
+    }
+  }
+  starts.reverse();
+  const remain = frames.map(f => Float32Array.from(f));
+  const notes = [];
+  const clearAround = (j, c) => { remain[j][c] = 0; if (c < N_PITCH - 1) remain[j][c + 1] = 0; if (c > 0) remain[j][c - 1] = 0; };
+  for (const code of starts) {
+    const s = Math.floor(code / N_PITCH), c = code % N_PITCH;
+    if (s >= nF - 1) continue;
+    let i = s + 1, k = 0;
+    while (i < nF - 1 && k < energyTol) { if (remain[i][c] < frameThresh) k++; else k = 0; i++; }
+    i -= k;
+    if (i - s <= minNoteLen) continue;
+    let amp = 0; for (let j = s; j < i; j++) amp += frames[j][c];
+    for (let j = s; j < i; j++) clearAround(j, c);
+    notes.push({ s, len: i - s, pitch: c + MIDI_OFFSET, amp: amp / (i - s) });
+  }
+  // 3) melodia trick (선택)
+  if (melodia) {
+    for (let iter = 0; iter < 3000; iter++) {
+      let best = 0, bi = -1, bc = -1;
+      for (let r = 0; r < nF; r++) { const row = remain[r]; for (let c = 0; c < N_PITCH; c++) if (row[c] > best) { best = row[c]; bi = r; bc = c; } }
+      if (best <= frameThresh) break;
+      remain[bi][bc] = 0;
+      let i = bi + 1, k = 0;
+      while (i < nF - 1 && k < energyTol) { if (remain[i][bc] < frameThresh) k++; else k = 0; clearAround(i, bc); i++; }
+      const iEnd = i - 1 - k;
+      i = bi - 1; k = 0;
+      while (i > 0 && k < energyTol) { if (remain[i][bc] < frameThresh) k++; else k = 0; clearAround(i, bc); i--; }
+      const iStart = i + 1 + k;
+      if (iEnd - iStart <= minNoteLen) continue;
+      let amp = 0; for (let j = iStart; j < iEnd; j++) amp += frames[j][bc];
+      notes.push({ s: iStart, len: iEnd - iStart, pitch: bc + MIDI_OFFSET, amp: amp / (iEnd - iStart) });
+    }
+  }
+  const t = (fr) => (fr * FFT_HOP) / SR - WINDOW_OFFSET * Math.floor(fr / ANNOT_N_FRAMES);
+  return notes.map(n => ({ start: t(n.s), dur: t(n.s + n.len) - t(n.s), pitch: n.pitch, vel: Math.min(1, n.amp * 1.6) }))
+              .sort((a, b) => a.start - b.start || b.pitch - a.pitch);
+}
+
+const SENS = {
+  low:  { onsetThresh: 0.6,  frameThresh: 0.4,  minNoteLen: 11 },
+  mid:  { onsetThresh: 0.5,  frameThresh: 0.3,  minNoteLen: 9 },
+  high: { onsetThresh: 0.35, frameThresh: 0.25, minNoteLen: 6 },
+};
+
+/* =========================================================
+   템포 추정 (음 시작점 주기성)
+   ========================================================= */
+function estimateTempo(notes) {
+  if (notes.length < 8) return { bpm: 120, offset: 0, confident: false };
+  const on = notes.map(n => n.start), w = notes.map(n => 0.3 + n.vel);
+  const W = w.reduce((a, b) => a + b, 0);
+  let best = null;
+  for (let bpm = 60; bpm <= 200; bpm++) {
+    const P = 60 / bpm;
+    let br = 0, bi = 0, er = 0, ei = 0;
+    for (let i = 0; i < on.length; i++) {
+      const a = 2 * Math.PI * on[i] / P;
+      br += w[i] * Math.cos(a); bi += w[i] * Math.sin(a);
+      er += w[i] * Math.cos(2 * a); ei += w[i] * Math.sin(2 * a);
+    }
+    const beat = Math.hypot(br, bi) / W, eighth = Math.hypot(er, ei) / W;
+    const prior = Math.exp(-Math.pow(Math.log2(bpm / 115), 2) / (2 * 0.45 * 0.45));
+    const score = (beat + 0.5 * eighth) * (0.6 + 0.4 * prior);
+    if (!best || score > best.score) {
+      let ph = Math.atan2(bi, br); if (ph < 0) ph += 2 * Math.PI;
+      best = { bpm, score, offset: (ph / (2 * Math.PI)) * P, beat };
+    }
+  }
+  return { bpm: best.bpm, offset: best.offset, confident: best.beat > 0.25 };
+}
+
+/* =========================================================
+   음표 → 파트 배분 → MML
+   (내부 시간 단위: 온음표 = 64)
+   ========================================================= */
+function fitRange(p, transpose) {
+  p += transpose;
+  while (p < MIN_MIDI) p += 12;
+  while (p > MAX_MIDI) p -= 12;
+  return p;
+}
+function quantizeNotes(notes, grid) {
+  const out = [];
+  for (const n of notes) {
+    let s = Math.round(n.s / grid) * grid, e = Math.round(n.e / grid) * grid;
+    if (s < 0) s = 0;
+    if (e <= s) e = s + grid;
+    out.push({ s, e, p: n.p, v: n.v, src: n.src || 0 });
+  }
+  out.sort((a, b) => a.s - b.s || b.p - a.p || b.e - a.e);
+  // 같은 음이 같은 시작점에 중복되면 하나만, 같은 음이 겹치면 앞 음을 자름
+  const res = [], lastByPitch = new Map();
+  for (const n of out) {
+    const prev = lastByPitch.get(n.p + ':' + n.src);
+    if (prev) {
+      if (prev.s === n.s) { if (n.e > prev.e) prev.e = n.e; continue; }
+      if (prev.e > n.s) prev.e = n.s;
+    }
+    res.push(n); lastByPitch.set(n.p + ':' + n.src, n);
+  }
+  return res.filter(n => n.e > n.s);
+}
+
+// 높은 음을 멜로디로, 나머지를 화음 파트로 (각 파트는 단음)
+function allocate(notes, nTracks) {
+  const tracks = Array.from({ length: nTracks }, () => []);
+  const lastEnd = new Array(nTracks).fill(0);
+  let dropped = 0, i = 0;
+  while (i < notes.length) {
+    let j = i; while (j < notes.length && notes[j].s === notes[i].s) j++;
+    const group = notes.slice(i, j).sort((a, b) => b.p - a.p);
+    i = j;
+    for (let g = 0; g < group.length; g++) {
+      const n = { ...group[g] };
+      let placed = false;
+      if (g === 0) {
+        const t0 = tracks[0];
+        if (lastEnd[0] <= n.s) { t0.push(n); lastEnd[0] = n.e; placed = true; }
+        else {
+          const last = t0[t0.length - 1];
+          if (n.p > last.p) { last.e = n.s; if (last.e <= last.s) t0.pop(); t0.push(n); lastEnd[0] = n.e; placed = true; }
+        }
+        if (placed) continue;
+      }
+      for (let k = 1; k < nTracks; k++) if (lastEnd[k] <= n.s) { tracks[k].push(n); lastEnd[k] = n.e; placed = true; break; }
+      if (!placed && nTracks > 1) {
+        // 가장 오래 울리고 있는 화음 음을 끊고 자리 만들기
+        let bk = -1, bestLen = 0;
+        for (let k = 1; k < nTracks; k++) { const l = tracks[k][tracks[k].length - 1]; if (l && n.s - l.s > bestLen) { bestLen = n.s - l.s; bk = k; } }
+        if (bk > 0 && bestLen >= 8) { const l = tracks[bk][tracks[bk].length - 1]; l.e = n.s; tracks[bk].push(n); lastEnd[bk] = n.e; placed = true; }
+      }
+      if (!placed) dropped++;
+    }
+  }
+  return { tracks, dropped };
+}
+
+// 길이표: 온음표=64 기준
+const LEN_TABLE = (() => {
+  const t = [];
+  for (const n of [1, 2, 4, 8, 16, 32, 64]) { const v = 64 / n; t.push({ n, dot: false, v }); if (v % 2 === 0) t.push({ n, dot: true, v: v * 1.5 }); }
+  return t.sort((a, b) => b.v - a.v);
+})();
+function splitLen(v) {
+  const out = [];
+  while (v > 0) { const p = LEN_TABLE.find(x => x.v <= v); out.push(p); v -= p.v; }
+  return out;
+}
+function lenTok(p, L) {
+  if (p.n === L) return p.dot ? '.' : '';
+  return p.n + (p.dot ? '.' : '');
+}
+function renderTrack(evs, o) {
+  // o: {bpm, L, vol, dyn, padTo}
+  let s = 't' + o.bpm + (o.L !== 4 ? 'l' + o.L : '') + 'v' + o.vol;
+  let cur = 0, oct = null, curVol = o.vol;
+  const rest = (len) => splitLen(len).map(p => 'r' + lenTok(p, o.L)).join('');
+  for (const e of evs) {
+    if (e.s > cur) s += rest(e.s - cur);
+    if (o.dyn) {
+      const v = Math.max(1, Math.min(15, Math.round(o.vol * (0.55 + 0.45 * (e.v == null ? 0.8 : e.v)))));
+      if (v !== curVol) { s += 'v' + v; curVol = v; }
+    }
+    const oc = Math.floor(e.p / 12) - 1, name = NOTE_NAMES[e.p % 12];
+    if (oct === null) s += 'o' + oc;
+    else if (oc === oct + 1) s += '>';
+    else if (oc === oct - 1) s += '<';
+    else if (oc !== oct) s += 'o' + oc;
+    oct = oc;
+    s += splitLen(e.e - e.s).map(p => name + lenTok(p, o.L)).join('&');
+    cur = e.e;
+  }
+  if (o.padTo != null && o.padTo > cur) s += rest(o.padTo - cur);
+  return s;
+}
+function renderTrackBest(evs, o) {
+  let best = null;
+  for (const L of [4, 8, 16, 2, 32, 1]) {
+    const s = renderTrack(evs, { ...o, L });
+    if (!best || s.length < best.length) best = s;
+  }
+  return best;
+}
+function clip(evs, cut) {
+  const out = [];
+  for (const e of evs) { if (e.s >= cut) break; out.push(e.e > cut ? { ...e, e: cut } : e); }
+  return out;
+}
+function buildScore(trackEvs, opts) {
+  const totalEnd = Math.max(0, ...trackEvs.map(t => t.length ? t[t.length - 1].e : 0));
+  const render = (cut) => trackEvs.map((evs, i) => renderTrackBest(clip(evs, cut), {
+    bpm: opts.bpm, vol: i === 0 ? opts.volMel : opts.volAcc, dyn: opts.dyn,
+    padTo: opts.pad ? Math.min(cut, totalEnd) : null
+  }));
+  let parts = render(Infinity), cutAt = totalEnd, cut = false;
+  const over = (ps) => ps.some(s => s.length > opts.limit);
+  if (opts.fit && over(parts)) {
+    const cands = [...new Set(trackEvs.flat().map(e => e.s))].filter(x => x > 0).sort((a, b) => a - b);
+    let lo = 0, hi = cands.length - 1, ok = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (!over(render(cands[mid]))) { ok = mid; lo = mid + 1; } else hi = mid - 1;
+    }
+    if (ok >= 0) { cutAt = cands[ok]; parts = render(cutAt); cut = true; }
+    else { parts = render(cands[0] || 0); cutAt = cands[0] || 0; cut = true; }
+  }
+  return { parts, cut, cutAt, totalEnd };
+}
+
+/* =========================================================
+   MML 파서 (미리 듣기 + 검증용)
+   ========================================================= */
+function parseMML(text) {
+  let body = text.trim();
+  const m = body.match(/MML@([\s\S]*?);/i); if (m) body = m[1];
+  return body.split(',').map(tr => parseTrack(tr.replace(/\s+/g, '')));
+}
+function parseTrack(src) {
+  let i = 0, t = 120, L = 4, Ld = 0, o = 4, v = 8, time = 0, tieNext = false;
+  const notes = []; const s = src.toLowerCase();
+  const num = () => { let j = i; while (j < s.length && s[j] >= '0' && s[j] <= '9') j++; const r = j > i ? parseInt(s.slice(i, j), 10) : null; i = j; return r; };
+  const dots = () => { let d = 0; while (s[i] === '.') { d++; i++; } return d; };
+  const dur = (n, d) => { const base = 4 / (n || L); const dd = n ? d : (d || Ld); let f = 1, add = 0.5; for (let k = 0; k < dd; k++) { f += add; add /= 2; } return base * f * 60 / t; };
+  const SEMI = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+  while (i < s.length) {
+    const ch = s[i++];
+    if (ch in SEMI || ch === 'n') {
+      let pitch;
+      if (ch === 'n') { pitch = num(); if (pitch == null) continue; }
+      else {
+        pitch = (o + 1) * 12 + SEMI[ch];
+        while (s[i] === '+' || s[i] === '#' || s[i] === '-') { pitch += s[i] === '-' ? -1 : 1; i++; }
+      }
+      const n = ch === 'n' ? null : num(); const d = dots();
+      const len = dur(n, d);
+      const prev = notes[notes.length - 1];
+      if (tieNext && prev && prev.pitch === pitch && Math.abs(prev.start + prev.dur - time) < 1e-6) prev.dur += len;
+      else notes.push({ start: time, dur: len, pitch, vol: v });
+      time += len; tieNext = false;
+    } else if (ch === 'r') { const n = num(); const d = dots(); time += dur(n, d); tieNext = false; }
+    else if (ch === '&') tieNext = true;
+    else if (ch === 'o') { const n = num(); if (n != null) o = n; }
+    else if (ch === '>') o++;
+    else if (ch === '<') o--;
+    else if (ch === 'l') { const n = num(); if (n) { L = n; Ld = dots(); } }
+    else if (ch === 'v') { const n = num(); if (n != null) v = n; }
+    else if (ch === 't') { const n = num(); if (n) t = n; }
+  }
+  return { notes, end: time };
+}
+
+/* =========================================================
+   변환 메인
+   ========================================================= */
+$('convertBtn').addEventListener('click', convert);
+
+function readOpts() {
+  const num = (id, def) => { const v = parseFloat($(id).value); return isFinite(v) ? v : def; };
+  return {
+    tracks: state.tracks,
+    bpm: $('bpm').value.trim() ? Math.round(Math.max(32, Math.min(255, num('bpm', 120)))) : null,
+    grid: parseInt($('grid').value, 10),
+    transpose: Math.round(num('transpose', 0)),
+    volMel: Math.round(Math.max(1, Math.min(15, num('volMel', 13)))),
+    volAcc: Math.round(Math.max(1, Math.min(15, num('volAcc', 10)))),
+    limit: Math.round(Math.max(100, Math.min(2400, num('charLimit', 2400)))),
+    fit: $('fit').checked, pad: $('pad').checked, dyn: $('dyn').checked,
+    sens: $('sens').value, melodia: $('melodia').checked,
+    lowNote: parseInt($('lowNote').value, 10), highNote: parseInt($('highNote').value, 10),
+  };
+}
+
+let busy = false;
+async function convert() {
+  if (busy) return;
+  hideError();
+  const opts = readOpts();
+  busy = true; $('convertBtn').disabled = true;
+  try {
+    let raw; // {notes:[{s,e,p,v,src}] (64ths), bpm, info, warnings}
+    if (state.source === 'midi') raw = fromMidi(opts);
+    else raw = await fromAudio(opts);
+    if (!raw) return;
+    finish(raw, opts);
+  } catch (e) {
+    console.error(e);
+    showError(e.message || String(e));
+  } finally {
+    busy = false; $('convertBtn').disabled = false; showProgress(false);
+  }
+}
+
+function fromMidi(opts) {
+  const M = state.midi;
+  if (!M) { showError('MIDI 파일을 먼저 선택해 주세요.'); return null; }
+  const checked = [...document.querySelectorAll('#midiItems input[type=checkbox]')].filter(c => c.checked).map(c => +c.dataset.trk);
+  if (!checked.length) { showError('포함할 MIDI 트랙을 하나 이상 체크해 주세요.'); return null; }
+  const warnings = [];
+  const tempo0 = M.tempos.length ? M.tempos[0].bpm : 120;
+  const distinct = new Set(M.tempos.map(t => Math.round(t.bpm)));
+  const bpm = opts.bpm || Math.round(Math.max(32, Math.min(255, tempo0)));
+  if (distinct.size > 1 && !opts.bpm) warnings.push(`곡 중간에 템포가 바뀌는 MIDI예요. 첫 템포(${bpm})로 고정해서 만들었어요.`);
+  const k = 16 / M.ppq; // tick → 64분 단위
+  const notes = [];
+  checked.forEach((ti, idx) => {
+    for (const n of M.tracks[ti].notes) notes.push({ s: n.tick * k, e: n.end * k, p: fitRange(n.pitch, opts.transpose), v: n.vel, src: idx });
+  });
+  return { notes, bpm, mode: $('midiMode').value, order: checked.length, warnings,
+           info: `MIDI · ${M.fileName}` };
+}
+
+async function fromAudio(opts) {
+  let buffer, key, label;
+  if (state.source === 'youtube') {
+    if (!state.recorded) { showError('먼저 ② 음원 추출 시작으로 유튜브 음원을 추출해 주세요.'); return null; }
+    buffer = state.recorded; label = '유튜브 음원';
+  } else {
+    if (!state.audioBuffer) { showError('음원 파일을 먼저 선택해 주세요.'); return null; }
+    buffer = state.audioBuffer; label = '음원 · ' + state.audioFile.name;
+  }
+  const sel = state.sel[state.source] || { s: 0, e: buffer.duration };
+  const st = Math.max(0, Math.min(sel.s, sel.e)), en = Math.min(buffer.duration, Math.max(sel.s, sel.e));
+  if (en - st < 1) { showError('선택한 구간이 너무 짧아요. 1초 이상 선택해 주세요.'); return null; }
+  key = (state.source === 'youtube' ? 'rec:' + state.recordedId : `file:${state.audioFile.name}:${state.audioFile.size}`) + `:${st.toFixed(2)}:${en.toFixed(2)}`;
+  label += ` · ${fmtClock(st)} ~ ${fmtClock(en)}`;
+  if (!state.analysis || state.analysis.key !== key) {
+    showProgress(true, 'AI 엔진 불러오는 중… (처음 한 번만 수십 초 걸릴 수 있어요)', 0);
+    await loadModel();
+    showProgress(true, '음원 준비 중…', 0);
+    const samples = await toMono22k(buffer, st, en);
+    const res = await runBasicPitch(samples, (p) => showProgress(true, `AI가 음을 듣고 있어요… ${Math.round(p * 100)}%`, p));
+    state.analysis = { key, ...res, duration: en - st };
+  }
+  showProgress(true, '음표 정리 중…', 1);
+  await new Promise(r => setTimeout(r, 30));
+  let notes = framesToNotes(state.analysis.frames, state.analysis.onsets, { ...SENS[opts.sens], melodia: opts.melodia });
+  const lo = Math.min(opts.lowNote, opts.highNote), hi = Math.max(opts.lowNote, opts.highNote);
+  notes = notes.filter(n => n.pitch >= lo && n.pitch <= hi);
+  if (!notes.length) { showError('음을 찾지 못했어요. 민감도를 "높음"으로 바꾸거나 음역 범위를 넓혀 보세요.'); return null; }
+  const warnings = [];
+  let bpm = opts.bpm, offset = 0;
+  if (!bpm) {
+    const est = estimateTempo(notes);
+    bpm = est.bpm; offset = est.offset;
+    if (!est.confident) warnings.push(`템포를 확실히 찾지 못해 ${bpm}으로 정했어요. 박자가 어색하면 원곡 BPM을 직접 입력해 보세요.`);
+  } else {
+    // 입력된 BPM 기준 박 위치만 맞추기
+    const P = 60 / bpm; let br = 0, bi = 0;
+    for (const n of notes) { const a = 2 * Math.PI * n.start / P; br += Math.cos(a); bi += Math.sin(a); }
+    let ph = Math.atan2(bi, br); if (ph < 0) ph += 2 * Math.PI; offset = ph / (2 * Math.PI) * P;
+  }
+  const sec64 = 60 / bpm / 16;
+  let out = notes.map(n => ({ s: (n.start - offset) / sec64, e: (n.start + n.dur - offset) / sec64, p: fitRange(n.pitch, opts.transpose), v: n.vel }));
+  // 첫 음 앞의 빈 박 제거 (박 단위 유지)
+  const first = Math.min(...out.map(n => n.s));
+  const shift = Math.floor(first / 16) * 16;
+  out = out.map(n => ({ ...n, s: n.s - shift, e: n.e - shift }));
+  return { notes: out, bpm, mode: 'auto', warnings, info: label, autoBpm: !opts.bpm };
+}
+
+function finish(raw, opts) {
+  const warnings = [...raw.warnings];
+  let trackEvs, dropped = 0;
+  if (raw.mode === 'map') {
+    const q = quantizeNotes(raw.notes, opts.grid);
+    const nUse = Math.min(raw.order, opts.tracks);
+    const per = q.length ? Array.from({ length: nUse }, (_, k) => q.filter(n => n.src === k)) : [];
+    // 파트가 남으면 동시에 울리는 음이 많은 MIDI 트랙에 파트를 더 줌
+    const parts = per.map(() => 1);
+    const poly = per.map(evs => { let m = 1; for (let i = 0; i < evs.length; i++) { let c = 1; for (let j = i + 1; j < evs.length && evs[j].s < evs[i].e; j++) c++; if (c > m) m = c; } return m; });
+    for (let extra = opts.tracks - nUse; extra > 0; extra--) {
+      let bk = -1, bestNeed = 0;
+      per.forEach((_, k) => { const need = poly[k] - parts[k]; if (need > bestNeed) { bestNeed = need; bk = k; } });
+      if (bk < 0) break;
+      parts[bk]++;
+    }
+    trackEvs = [];
+    per.forEach((evs, k) => { const al = allocate(evs, parts[k]); al.tracks.forEach(t => trackEvs.push(t)); dropped += al.dropped; });
+    if (raw.order > opts.tracks) warnings.push(`체크한 MIDI 트랙이 ${raw.order}개인데 파트 수가 ${opts.tracks}개라 앞의 ${opts.tracks}개만 넣었어요.`);
+  } else {
+    const q = quantizeNotes(raw.notes.map(n => ({ ...n, src: 0 })), opts.grid);
+    const al = allocate(q, opts.tracks);
+    trackEvs = al.tracks; dropped = al.dropped;
+  }
+  // 끝쪽 빈 파트 제거
+  while (trackEvs.length > 1 && !trackEvs[trackEvs.length - 1].length) trackEvs.pop();
+  if (trackEvs.length < opts.tracks) warnings.push(`화음으로 쓸 음이 부족해서 ${trackEvs.length}파트로 만들었어요.`);
+  if (!trackEvs[0].length) { showError('변환할 음이 없어요.'); return; }
+
+  const score = buildScore(trackEvs, { ...opts, bpm: raw.bpm });
+  const sec64 = 60 / raw.bpm / 16;
+  if (score.cut) warnings.push(`글자수 상한(${opts.limit}자)에 맞추느라 앞부분 ${fmtTime(score.cutAt * sec64)}까지만 담았어요. (전체 ${fmtTime(score.totalEnd * sec64)}) 박자 정밀도를 8분음표로 바꾸거나 파트 수를 줄이면 더 길게 담을 수 있어요.`);
+  if (dropped > 0) warnings.push(`동시에 울리는 음이 많아 ${dropped}개 음은 뺐어요. 파트 수를 늘리면 더 많이 담겨요.`);
+  const over = score.parts.filter(p => p.length > 2400).length;
+  if (over) warnings.push(`2,400자를 넘는 파트가 ${over}개 있어요. 인게임에 붙여넣기가 안 될 수 있어요.`);
+
+  const full = 'MML@' + score.parts.join(',') + ';';
+  state.last = { full, parts: score.parts, bpm: raw.bpm };
+  if (raw.autoBpm) $('bpmHint').textContent = `자동으로 찾은 템포: ${raw.bpm}`;
+
+  // 출력
+  const title = $('title').value.trim() || '제목 없음';
+  const artist = $('artist').value.trim();
+  $('resTitle').textContent = title;
+  $('resSub').textContent = [artist && '아티스트: ' + artist, raw.info, ytId($('ytUrl').value) && state.source === 'youtube' ? '링크: ' + $('ytUrl').value.trim() : ''].filter(Boolean).join(' | ');
+  const noteCount = score.parts.reduce((a, p) => a + parseTrack(p).notes.length, 0);
+  $('stats').innerHTML = [
+    ['템포', 'T' + raw.bpm], ['파트', score.parts.length + '개'],
+    ['담긴 길이', fmtTime((score.cut ? score.cutAt : score.totalEnd) * sec64)], ['음표', noteCount + '개'],
+  ].map(([k, v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+  const w = $('warn');
+  w.style.display = warnings.length ? 'block' : 'none';
+  w.innerHTML = '<ul>' + warnings.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>';
+  $('fullMml').value = full;
+  $('fullCnt').textContent = `파트 ${score.parts.length}개 · 총 ${full.length.toLocaleString()}자`;
+  const box = $('tracks'); box.innerHTML = '';
+  score.parts.forEach((p, i) => {
+    const name = i === 0 ? '멜로디' : '화음 ' + i;
+    const d = document.createElement('div'); d.className = 'track';
+    d.innerHTML = `<div class="track-h"><span class="t">${name}<small>파트 ${i + 1}</small></span>
+      <span class="row"><span class="cnt ${p.length > 2400 ? 'over' : ''}">${p.length.toLocaleString()} / 2,400자</span>
+      <button class="btn" type="button">복사</button></span></div>
+      <textarea rows="3" readonly></textarea>`;
+    d.querySelector('textarea').value = p;
+    const b = d.querySelector('button');
+    b.onclick = () => copyText(p, b, '복사 완료!');
+    box.appendChild(d);
+  });
+  $('result').style.display = 'block';
+  $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* =========================================================
+   복사 / 저장 / 미리 듣기
+   ========================================================= */
+async function copyText(text, btn, okMsg) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch (e2) {}
+    ta.remove();
+  }
+  const old = btn.textContent;
+  btn.textContent = ok ? okMsg : '복사 실패 — 직접 선택해 복사해 주세요';
+  btn.classList.add(ok ? 'ok' : 'red');
+  setTimeout(() => { btn.textContent = old; btn.classList.remove('ok', 'red'); }, 1800);
+}
+$('copyFull').addEventListener('click', () => state.last && copyText(state.last.full, $('copyFull'), '복사 완료!'));
+$('copyAll').addEventListener('click', () => state.last && copyText(state.last.full, $('copyAll'), '전체 복사 완료!'));
+$('dlBtn').addEventListener('click', () => {
+  if (!state.last) return;
+  downloadBlob(new Blob([state.last.full + '\n'], { type: 'text/plain;charset=utf-8' }), baseName() + '.txt');
+});
+
+let player = null;
+$('playBtn').addEventListener('click', () => { if (player) stopPlay(); else play(); });
+function play() {
+  if (!state.last) return;
+  const tracks = parseMML(state.last.full);
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain(); master.gain.value = 0.18; master.connect(ctx.destination);
+  const t0 = ctx.currentTime + 0.15; let end = 0;
+  tracks.forEach((tr, ti) => {
+    for (const n of tr.notes) {
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = ti === 0 ? 'triangle' : 'sine';
+      osc.frequency.value = 440 * Math.pow(2, (n.pitch - 69) / 12);
+      const a = t0 + n.start, b = a + Math.max(0.05, n.dur), peak = (n.vol / 15) * (ti === 0 ? 1 : 0.7);
+      g.gain.setValueAtTime(0, a); g.gain.linearRampToValueAtTime(peak, a + 0.01);
+      g.gain.setTargetAtTime(peak * 0.5, a + 0.02, 0.25);
+      g.gain.setTargetAtTime(0, b - 0.02, 0.03);
+      osc.connect(g).connect(master); osc.start(a); osc.stop(b + 0.2);
+    }
+    end = Math.max(end, tr.end);
+  });
+  player = { ctx, timer: setTimeout(stopPlay, (end + 0.6) * 1000) };
+  $('playBtn').textContent = '■ 정지';
+}
+function stopPlay() {
+  if (!player) return;
+  clearTimeout(player.timer); player.ctx.close(); player = null;
+  $('playBtn').textContent = '▶ 미리 듣기';
+}
+
+/* =========================================================
+   음원 구간 선택 (파형 에디터) + MP3 저장
+   ========================================================= */
+function curBuffer() { return state.source === 'youtube' ? state.recorded : state.source === 'audio' ? state.audioBuffer : null; }
+function fmtClock(t) { t = Math.max(0, t); const m = Math.floor(t / 60); const s = t - m * 60; return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1); }
+function parseClock(str) {
+  str = String(str).trim(); if (!str) return NaN;
+  const parts = str.split(':').map(Number);
+  if (parts.some(x => !isFinite(x))) return NaN;
+  return parts.reduce((a, b) => a * 60 + b, 0);
+}
+const peaksCache = new WeakMap();
+function getPeaks(buf, n) {
+  let c = peaksCache.get(buf); if (c && c.n === n) return c.p;
+  const chs = []; for (let i = 0; i < buf.numberOfChannels; i++) chs.push(buf.getChannelData(i));
+  const len = buf.length, step = len / n, p = new Float32Array(n);
+  for (let x = 0; x < n; x++) {
+    const a = Math.floor(x * step), b = Math.min(len, Math.floor((x + 1) * step));
+    let m = 0;
+    for (let i = a; i < b; i += 4) { let v = 0; for (const d of chs) v += d[i]; v = Math.abs(v / chs.length); if (v > m) m = v; }
+    p[x] = m;
+  }
+  peaksCache.set(buf, { n, p }); return p;
+}
+function refreshEditor() {
+  const buf = curBuffer();
+  $('editor').style.display = buf ? 'block' : 'none';
+  if (!buf) return;
+  if (!state.sel[state.source]) state.sel[state.source] = { s: 0, e: buf.duration };
+  $('edInfo').textContent = (state.source === 'youtube' ? '추출한 유튜브 음원' : state.audioFile.name) + ' · 전체 ' + fmtClock(buf.duration);
+  drawWave(); updateSelUI();
+}
+function drawWave() {
+  const buf = curBuffer(); if (!buf) return;
+  const cv = $('wave'), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(100, cv.clientWidth), h = cv.clientHeight || 110;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const n = Math.round(w), p = getPeaks(buf, n);
+  let max = 0; for (const v of p) if (v > max) max = v; max = max || 1;
+  g.fillStyle = '#4b5563';
+  for (let x = 0; x < n; x++) { const a = (p[x] / max) * (h / 2 - 4); g.fillRect(x, h / 2 - a, 1, Math.max(1, a * 2)); }
+  // 시간 눈금
+  g.fillStyle = '#64748b'; g.font = '10px sans-serif';
+  const dur = buf.duration, stepT = dur > 300 ? 60 : dur > 120 ? 30 : dur > 40 ? 10 : 5;
+  for (let t = stepT; t < dur; t += stepT) { const x = (t / dur) * w; g.fillRect(x, h - 6, 1, 6); g.fillText(fmtClock(t).replace(/\.\d$/, ''), x + 2, h - 2); }
+}
+function updateSelUI() {
+  const buf = curBuffer(); if (!buf) return;
+  const sel = state.sel[state.source], d = buf.duration;
+  const a = Math.min(sel.s, sel.e), b = Math.max(sel.s, sel.e);
+  $('waveSel').style.left = (a / d * 100) + '%';
+  $('waveSel').style.width = ((b - a) / d * 100) + '%';
+  if (document.activeElement !== $('selStart')) $('selStart').value = fmtClock(a);
+  if (document.activeElement !== $('selEnd')) $('selEnd').value = fmtClock(b);
+  const len = b - a;
+  $('selLen').textContent = (len >= 60 ? Math.floor(len / 60) + '분 ' : '') + (len % 60).toFixed(1) + '초' + (len > 240 ? ' (분석이 오래 걸려요)' : '');
+}
+(function initWaveDrag() {
+  const wrap = $('waveWrap'); let drag = null;
+  const tAt = (ev) => { const r = wrap.getBoundingClientRect(); const buf = curBuffer(); return Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * buf.duration; };
+  wrap.addEventListener('pointerdown', (ev) => {
+    const buf = curBuffer(); if (!buf) return;
+    const sel = state.sel[state.source]; const t = tAt(ev);
+    const r = wrap.getBoundingClientRect(), px = (x) => x / buf.duration * r.width;
+    const a = Math.min(sel.s, sel.e), b = Math.max(sel.s, sel.e);
+    const xa = px(a), xb = px(b), x = ev.clientX - r.left;
+    if (Math.abs(x - xa) < 12) drag = { mode: 's' }, sel.s = a, sel.e = b;
+    else if (Math.abs(x - xb) < 12) drag = { mode: 'e' }, sel.s = a, sel.e = b;
+    else { drag = { mode: 'e' }; sel.s = t; sel.e = t; }
+    wrap.setPointerCapture(ev.pointerId); updateSelUI();
+  });
+  wrap.addEventListener('pointermove', (ev) => {
+    if (!drag) return; const sel = state.sel[state.source]; sel[drag.mode] = tAt(ev); updateSelUI();
+  });
+  const end = () => {
+    if (!drag) return; drag = null;
+    const sel = state.sel[state.source], buf = curBuffer();
+    const a = Math.min(sel.s, sel.e), b = Math.max(sel.s, sel.e);
+    if (b - a < 0.3) { sel.s = 0; sel.e = buf.duration; } else { sel.s = a; sel.e = b; }
+    updateSelUI();
+  };
+  wrap.addEventListener('pointerup', end); wrap.addEventListener('pointercancel', end);
+  window.addEventListener('resize', () => { if (curBuffer()) drawWave(); });
+})();
+['selStart', 'selEnd'].forEach(id => $(id).addEventListener('change', () => {
+  const buf = curBuffer(); if (!buf) return;
+  const sel = state.sel[state.source]; const v = parseClock($(id).value);
+  if (isFinite(v)) {
+    const t = Math.max(0, Math.min(buf.duration, v));
+    if (id === 'selStart') sel.s = Math.min(t, Math.max(sel.s, sel.e) - 0.3); else sel.e = Math.max(t, Math.min(sel.s, sel.e) + 0.3);
+    sel.s = Math.max(0, sel.s); sel.e = Math.min(buf.duration, sel.e);
+  }
+  $(id).blur(); updateSelUI();
+}));
+$('selAll').addEventListener('click', () => { const buf = curBuffer(); if (!buf) return; state.sel[state.source] = { s: 0, e: buf.duration }; updateSelUI(); });
+
+let selPlayer = null;
+$('selPlay').addEventListener('click', () => {
+  if (selPlayer) return stopSelPlay();
+  const buf = curBuffer(); if (!buf) return;
+  const sel = state.sel[state.source]; const a = Math.min(sel.s, sel.e), b = Math.max(sel.s, sel.e);
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+  const t0 = ctx.currentTime; src.start(t0, a, b - a);
+  src.onended = stopSelPlay;
+  selPlayer = { ctx, raf: 0 };
+  const ph = $('playhead'); ph.style.display = 'block';
+  const tick = () => { if (!selPlayer) return; const t = a + (ctx.currentTime - t0); ph.style.left = (t / buf.duration * 100) + '%'; selPlayer.raf = requestAnimationFrame(tick); };
+  tick();
+  $('selPlay').textContent = '■ 정지';
+});
+function stopSelPlay() {
+  if (!selPlayer) return;
+  cancelAnimationFrame(selPlayer.raf); try { selPlayer.ctx.close(); } catch (e) {}
+  selPlayer = null; $('playhead').style.display = 'none'; $('selPlay').textContent = '▶ 선택 구간 듣기';
+}
+
+const LAME_URLS = [
+  'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js',
+  'https://unpkg.com/lamejs@1.2.1/lame.min.js'
+];
+let lamePromise = null;
+function loadLame() {
+  if (!lamePromise) lamePromise = (async () => {
+    if (!window.lamejs) for (const u of LAME_URLS) { try { await loadScript(u); if (window.lamejs) break; } catch (e) {} }
+    if (!window.lamejs) throw new Error('MP3 변환 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.');
+    return window.lamejs;
+  })().catch(e => { lamePromise = null; throw e; });
+  return lamePromise;
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name.replace(/[\\/:*?"<>|]/g, '_');
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function baseName() {
+  const n = [$('artist').value.trim(), $('title').value.trim()].filter(Boolean).join(' - ');
+  if (n) return n;
+  if (state.source === 'youtube') { const id = ytId($('ytUrl').value); return id ? 'youtube_' + id : 'youtube_audio'; }
+  return state.audioFile ? state.audioFile.name.replace(/\.[^.]+$/, '') : 'audio';
+}
+async function encodeMp3(buf, a, b, onProgress) {
+  const lame = await loadLame();
+  const sr = buf.sampleRate, ch = Math.min(2, buf.numberOfChannels);
+  const i0 = Math.floor(a * sr), i1 = Math.min(buf.length, Math.floor(b * sr));
+  const enc = new lame.Mp3Encoder(ch, sr, 192);
+  const toI16 = (f) => { const o = new Int16Array(f.length); for (let i = 0; i < f.length; i++) { const v = Math.max(-1, Math.min(1, f[i])); o[i] = v < 0 ? v * 0x8000 : v * 0x7fff; } return o; };
+  const L = toI16(buf.getChannelData(0).subarray(i0, i1));
+  const R = ch > 1 ? toI16(buf.getChannelData(1).subarray(i0, i1)) : null;
+  const out = []; const BLK = 1152 * 50;
+  for (let i = 0; i < L.length; i += BLK) {
+    const l = L.subarray(i, i + BLK);
+    const d = R ? enc.encodeBuffer(l, R.subarray(i, i + BLK)) : enc.encodeBuffer(l);
+    if (d.length) out.push(new Uint8Array(d));
+    onProgress(i / L.length);
+    if ((i / BLK) % 20 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+  const f = enc.flush(); if (f.length) out.push(new Uint8Array(f));
+  return new Blob(out, { type: 'audio/mpeg' });
+}
+$('mp3Btn').addEventListener('click', async () => {
+  const buf = curBuffer(); if (!buf) return;
+  const sel = state.sel[state.source]; const a = Math.min(sel.s, sel.e), b = Math.max(sel.s, sel.e);
+  const btn = $('mp3Btn'), old = btn.textContent; btn.disabled = true; hideError();
+  try {
+    const blob = await encodeMp3(buf, a, b, (p) => { btn.textContent = `MP3 변환 중… ${Math.round(p * 100)}%`; });
+    downloadBlob(blob, baseName() + '.mp3');
+    btn.textContent = 'MP3 저장 완료!';
+  } catch (e) {
+    showError(e.message || String(e)); btn.textContent = old;
+  } finally {
+    btn.disabled = false; setTimeout(() => { btn.textContent = old; }, 1800);
+  }
+});
+
+/* =========================================================
+   공통 UI
+   ========================================================= */
+function showProgress(on, text, frac) {
+  $('progress').style.display = on ? 'block' : 'none';
+  if (text) $('progText').textContent = text;
+  if (frac != null) $('progBar').style.width = Math.round(frac * 100) + '%';
+}
+function showError(msg) { const e = $('err'); e.textContent = msg; e.style.display = 'block'; }
+function hideError() { $('err').style.display = 'none'; }
+
+// 테스트/디버그용 노출
+window.MML = { refreshEditor, encodeMp3, parseMidi, framesToNotes, estimateTempo, quantizeNotes, allocate, buildScore, renderTrack, parseMML, parseTrack, splitLen, finish, readOpts, state };
+</script>
+</body>
+</html>
