@@ -91,7 +91,7 @@
   .res-head h3{margin:0;font-size:17px}
   .res-head h3 span{color:#fbbf24}
   .res-head p{margin:4px 0 0;font-size:12px;color:var(--muted)}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
   @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
   .stat{background:#12121b;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
   .stat b{display:block;font-size:16px;color:#fff}
@@ -231,8 +231,13 @@
       <input type="file" id="midiFile" accept=".mid,.midi,audio/midi">
       <p class="hint">MIDI는 음 높이·박자가 정확해서 가장 깔끔한 악보가 나와요. 곡 이름 + "midi"로 검색하면 많이 찾을 수 있어요.</p>
       <div class="midi-list" id="midiList">
-        <label class="f" style="margin-top:6px">MIDI 속 트랙 <span style="font-weight:400;color:var(--dim)">(드럼은 자동으로 빼고, 높은 음을 멜로디로 나눠요)</span></label>
+        <label class="f" style="margin-top:6px">포함할 MIDI 트랙</label>
         <div id="midiItems"></div>
+        <label class="f" for="midiMode" style="margin-top:10px">파트 나누는 방식</label>
+        <select id="midiMode">
+          <option value="auto">자동 — 높은 음을 멜로디로, 나머지를 화음으로</option>
+          <option value="map">트랙 그대로 — 체크한 MIDI 트랙 순서대로 멜로디·화음1·화음2…</option>
+        </select>
       </div>
     </div>
   </div>
@@ -241,24 +246,72 @@
   <div class="sec">
     <p class="sec-title"><span class="num">3</span>출력 화음 수 <span class="badge" style="margin-left:auto">현재 <b id="chordValue">3</b>파트</span></p>
     <div class="chords" id="chords"></div>
-    <p class="hint" id="chordHint">게임 악보 1장에는 최대 6파트(멜로디 + 화음 5개)가 들어가요. 7파트 이상을 고르면 악보 2장으로 나눠서 만들어 드려요.</p>
+    <p class="hint">악기 12종에 맞춰 최대 12파트까지 만들 수 있어요. 게임 악보 1장에는 6파트(멜로디 + 화음 5개)까지 들어가서, 7파트 이상은 악보 2장으로 나눠 드려요. 3화음 악기로 혼자 연주하면 앞의 3파트까지 연주돼요.</p>
 
-    <div class="grid3 audio-only" style="margin-top:14px">
-      <div>
-        <label class="f" for="sens">AI 음 감지 민감도</label>
-        <select id="sens">
-          <option value="low">낮음 (확실한 음만)</option>
-          <option value="mid" selected>보통</option>
-          <option value="high">높음 (작은 음까지)</option>
-        </select>
+    <details class="adv" open>
+      <summary>세부 설정</summary>
+      <div class="grid3" style="margin-top:12px">
+        <div>
+          <label class="f" for="bpm">템포 (BPM)</label>
+          <input type="number" id="bpm" min="32" max="255" placeholder="자동">
+          <p class="hint" id="bpmHint">비워두면 자동으로 찾아요.</p>
+        </div>
+        <div>
+          <label class="f" for="grid">박자 정밀도</label>
+          <select id="grid">
+            <option value="8">8분음표 (짧은 악보)</option>
+            <option value="4" selected>16분음표 (권장)</option>
+            <option value="2">32분음표 (정밀, 글자 많음)</option>
+          </select>
+        </div>
+        <div>
+          <label class="f" for="transpose">조옮김 (반음)</label>
+          <input type="number" id="transpose" min="-24" max="24" step="1" value="0">
+          <p class="hint">12 = 한 옥타브 위</p>
+        </div>
+        <div>
+          <label class="f" for="volMel">멜로디 볼륨 (1~15)</label>
+          <input type="number" id="volMel" min="1" max="15" value="13">
+        </div>
+        <div>
+          <label class="f" for="volAcc">화음 볼륨 (1~15)</label>
+          <input type="number" id="volAcc" min="1" max="15" value="10">
+        </div>
+        <div>
+          <label class="f" for="charLimit">파트당 글자수 상한</label>
+          <input type="number" id="charLimit" min="100" max="2400" value="2400">
+        </div>
       </div>
-    </div>
-    <p class="hint">템포·박자·음 높이·볼륨·글자수 맞추기는 AI가 곡에 맞게 자동으로 정해요. 정해진 값은 결과 화면에서 확인할 수 있어요.</p>
+      <div class="grid3 audio-only" style="margin-top:12px">
+        <div>
+          <label class="f" for="sens">AI 음 감지 민감도</label>
+          <select id="sens">
+            <option value="low">낮음 (확실한 음만)</option>
+            <option value="mid" selected>보통</option>
+            <option value="high">높음 (작은 음까지)</option>
+          </select>
+        </div>
+        <div>
+          <label class="f" for="lowNote">가장 낮은 음</label>
+          <select id="lowNote"></select>
+        </div>
+        <div>
+          <label class="f" for="highNote">가장 높은 음</label>
+          <select id="highNote"></select>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:grid;gap:8px">
+        <label class="chk"><input type="checkbox" id="fit" checked><span>글자수를 넘으면 상한에 맞게 곡 뒷부분을 자동으로 잘라요</span></label>
+        <label class="chk"><input type="checkbox" id="pad" checked><span>모든 파트 길이를 똑같이 맞춰요 (합주할 때 한 파트만 먼저 반복되는 문제 방지)</span></label>
+        <label class="chk"><input type="checkbox" id="dyn"><span>음 세기(강약)를 볼륨에 반영해요 (글자수 증가)</span></label>
+        <label class="chk audio-only"><input type="checkbox" id="melodia"><span>세밀 분석 — 길게 이어지는 음을 더 찾아요 (분석이 느려질 수 있음)</span></label>
+      </div>
+    </details>
   </div>
 
   <div class="sec">
     <button class="btn gold big" type="button" id="convertBtn">♪ MML 악보 만들기</button>
-    <p class="hint" style="text-align:center" id="convertHint">파트 수나 민감도를 바꾼 뒤 다시 누르면 분석을 반복하지 않고 바로 다시 만들어요.</p>
+    <p class="hint" style="text-align:center" id="convertHint">설정을 바꾼 뒤 다시 누르면 분석을 반복하지 않고 바로 다시 만들어요.</p>
   </div>
 
   <div id="progress"><div class="spin"></div><p id="progText">준비 중…</p><div class="bar"><i id="progBar"></i></div></div>
@@ -299,7 +352,7 @@
     <h4>정확도를 높이려면</h4>
     <ul>
       <li>AI 채보는 원곡 그대로보다 <b>피아노 커버 / 오르골 / 기타 커버</b> 영상에서 훨씬 잘 돼요. 드럼과 보컬이 섞인 원곡은 음이 지저분해질 수 있어요.</li>
-      <li>박자가 어긋나 들리면 소리가 또렷한 커버 영상으로 다시 시도해 보세요. MIDI 파일이 있다면 MIDI가 가장 정확해요.</li>
+      <li>템포가 어긋나 들리면 원곡 BPM을 직접 입력해 보세요. MIDI 파일이 있다면 MIDI가 가장 정확해요.</li>
       <li>개인 연주용으로만 사용하고, 만든 악보를 공유할 땐 원곡 저작권을 존중해 주세요.</li>
     </ul>
   </div>
@@ -374,11 +427,20 @@ function renderChords() {
     b.type = 'button'; b.className = 'chord' + (n === state.tracks ? ' on' : '');
     b.innerHTML = n + (CHORD_LABELS[n] ? `<small>${CHORD_LABELS[n]}</small>` : '');
     b.onclick = () => { state.tracks = n; $('chordValue').textContent = n; renderChords(); };
-    b.title = n > PARTS_PER_SCORE ? '악보 2장으로 나눠서 만들어요' : '';
     box.appendChild(b);
   }
 }
 renderChords();
+
+function midiName(m) { return `${NOTE_LABEL[m % 12]}${Math.floor(m / 12) - 1} (o${Math.floor(m / 12) - 1}${NOTE_NAMES[m % 12]})`; }
+(function fillRange() {
+  const lo = $('lowNote'), hi = $('highNote');
+  for (let m = MIN_MIDI; m <= MAX_MIDI; m += 1) {
+    if (m % 12 !== 0 && m !== MAX_MIDI) continue;
+    lo.add(new Option(midiName(m), m)); hi.add(new Option(midiName(m), m));
+  }
+  lo.value = '36'; hi.value = String(MAX_MIDI);
+})();
 
 /* =========================================================
    유튜브
@@ -633,9 +695,9 @@ function renderMidiTracks() {
     if (!t.notes.length) return;
     const drum = t.channels.size === 1 && t.channels.has(9);
     const lo = Math.min(...t.notes.map(n => n.pitch)), hi = Math.max(...t.notes.map(n => n.pitch));
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `<span>${drum ? '✕' : '✓'} ${escapeHtml(t.name || '트랙 ' + (i + 1))}${drum ? ' (드럼 — 제외)' : ''}</span><span class="meta">음표 ${t.notes.length}개 · ${NOTE_LABEL[lo % 12]}${Math.floor(lo / 12) - 1}~${NOTE_LABEL[hi % 12]}${Math.floor(hi / 12) - 1}</span>`;
+    const el = document.createElement('label');
+    el.className = 'item chk';
+    el.innerHTML = `<span><input type="checkbox" data-trk="${i}" ${drum ? '' : 'checked'}> ${escapeHtml(t.name || '트랙 ' + (i + 1))}${drum ? ' (드럼)' : ''}</span><span class="meta">음표 ${t.notes.length}개 · ${NOTE_LABEL[lo % 12]}${Math.floor(lo / 12) - 1}~${NOTE_LABEL[hi % 12]}${Math.floor(hi / 12) - 1}</span>`;
     box.appendChild(el);
   });
   $('midiList').style.display = 'block';
@@ -1069,36 +1131,19 @@ function parseTrack(src) {
 $('convertBtn').addEventListener('click', convert);
 
 function readOpts() {
-  // 사용자가 정하는 값은 파트 수와 AI 민감도뿐. 나머지는 곡에 맞춰 자동으로 정함.
-  const n = state.tracks;
+  const num = (id, def) => { const v = parseFloat($(id).value); return isFinite(v) ? v : def; };
   return {
-    tracks: n,
-    sens: $('sens').value,
-    bpm: null, transpose: 0, melodia: false,
-    lowNote: 36, highNote: MAX_MIDI,
-    volMel: 13, volAcc: n <= 3 ? 10 : n <= 6 ? 9 : 8,
-    limit: 2400, fit: true, pad: true, dyn: false,
+    tracks: state.tracks,
+    bpm: $('bpm').value.trim() ? Math.round(Math.max(32, Math.min(255, num('bpm', 120)))) : null,
+    grid: parseInt($('grid').value, 10),
+    transpose: Math.round(num('transpose', 0)),
+    volMel: Math.round(Math.max(1, Math.min(15, num('volMel', 13)))),
+    volAcc: Math.round(Math.max(1, Math.min(15, num('volAcc', 10)))),
+    limit: Math.round(Math.max(100, Math.min(2400, num('charLimit', 2400)))),
+    fit: $('fit').checked, pad: $('pad').checked, dyn: $('dyn').checked,
+    sens: $('sens').value, melodia: $('melodia').checked,
+    lowNote: parseInt($('lowNote').value, 10), highNote: parseInt($('highNote').value, 10),
   };
-}
-
-// 박자 정밀도 자동 선택: 16분음표 기본, 박에서 많이 벗어나면 32분음표
-function chooseGrid(notes) {
-  if (!notes.length) return 4;
-  const err = (g) => notes.reduce((a, n) => a + Math.abs(n.s - Math.round(n.s / g) * g), 0) / notes.length;
-  const e16 = err(4), e32 = err(2);
-  return (e16 > 1.0 && e32 < e16 * 0.6) ? 2 : 4;
-}
-// 옥타브 자동 조정: 멜로디(가장 높은 음들)가 연주하기 좋은 음역(o4~o6)에 오도록
-function autoOctave(notes) {
-  if (!notes.length) return 0;
-  const byStart = new Map();
-  for (const n of notes) { const k = Math.round(n.s); if (!byStart.has(k) || byStart.get(k) < n.p) byStart.set(k, n.p); }
-  const tops = [...byStart.values()].sort((a, b) => a - b);
-  const med = tops[Math.floor(tops.length / 2)];
-  let shift = 0;
-  while (med + shift > 84) shift -= 12;
-  while (med + shift < 57) shift += 12;
-  return shift;
 }
 
 let busy = false;
@@ -1124,8 +1169,8 @@ async function convert() {
 function fromMidi(opts) {
   const M = state.midi;
   if (!M) { showError('MIDI 파일을 먼저 선택해 주세요.'); return null; }
-  const checked = M.tracks.map((t, i) => i).filter(i => M.tracks[i].notes.length && !(M.tracks[i].channels.size === 1 && M.tracks[i].channels.has(9)));
-  if (!checked.length) { showError('이 MIDI에는 변환할 음(드럼 제외)이 없어요.'); return null; }
+  const checked = [...document.querySelectorAll('#midiItems input[type=checkbox]')].filter(c => c.checked).map(c => +c.dataset.trk);
+  if (!checked.length) { showError('포함할 MIDI 트랙을 하나 이상 체크해 주세요.'); return null; }
   const warnings = [];
   const tempo0 = M.tempos.length ? M.tempos[0].bpm : 120;
   const distinct = new Set(M.tempos.map(t => Math.round(t.bpm)));
@@ -1136,7 +1181,7 @@ function fromMidi(opts) {
   checked.forEach((ti, idx) => {
     for (const n of M.tracks[ti].notes) notes.push({ s: n.tick * k, e: n.end * k, p: fitRange(n.pitch, opts.transpose), v: n.vel, src: idx });
   });
-  return { notes, bpm, mode: 'auto', order: checked.length, warnings,
+  return { notes, bpm, mode: $('midiMode').value, order: checked.length, warnings,
            info: `MIDI · ${M.fileName}` };
 }
 
@@ -1167,13 +1212,13 @@ async function fromAudio(opts) {
   let notes = framesToNotes(state.analysis.frames, state.analysis.onsets, { ...SENS[opts.sens], melodia: opts.melodia });
   const lo = Math.min(opts.lowNote, opts.highNote), hi = Math.max(opts.lowNote, opts.highNote);
   notes = notes.filter(n => n.pitch >= lo && n.pitch <= hi);
-  if (!notes.length) { showError('음을 찾지 못했어요. 민감도를 "높음"으로 바꿔 보세요.'); return null; }
+  if (!notes.length) { showError('음을 찾지 못했어요. 민감도를 "높음"으로 바꾸거나 음역 범위를 넓혀 보세요.'); return null; }
   const warnings = [];
   let bpm = opts.bpm, offset = 0;
   if (!bpm) {
     const est = estimateTempo(notes);
     bpm = est.bpm; offset = est.offset;
-    if (!est.confident) warnings.push(`AI가 템포를 확실히 찾지 못해 ${bpm}으로 정했어요. 박자가 어색하면 원곡이 더 또렷한 영상(피아노 커버 등)으로 다시 시도해 보세요.`);
+    if (!est.confident) warnings.push(`템포를 확실히 찾지 못해 ${bpm}으로 정했어요. 박자가 어색하면 원곡 BPM을 직접 입력해 보세요.`);
   } else {
     // 입력된 BPM 기준 박 위치만 맞추기
     const P = 60 / bpm; let br = 0, bi = 0;
@@ -1191,10 +1236,6 @@ async function fromAudio(opts) {
 
 function finish(raw, opts) {
   const warnings = [...raw.warnings];
-  // 자동 결정: 옥타브, 박자 정밀도
-  const oct = autoOctave(raw.notes);
-  if (oct) raw = { ...raw, notes: raw.notes.map(n => ({ ...n, p: fitRange(n.p, oct) })) };
-  opts = { ...opts, grid: chooseGrid(raw.notes) };
   let trackEvs, dropped = 0;
   if (raw.mode === 'map') {
     const q = quantizeNotes(raw.notes, opts.grid);
@@ -1224,7 +1265,7 @@ function finish(raw, opts) {
 
   const score = buildScore(trackEvs, { ...opts, bpm: raw.bpm });
   const sec64 = 60 / raw.bpm / 16;
-  if (score.cut) warnings.push(`게임 글자수 제한(파트당 2,400자) 때문에 앞부분 ${fmtTime(score.cutAt * sec64)}까지만 담았어요. (전체 ${fmtTime(score.totalEnd * sec64)}) 더 뒷부분이 필요하면 구간을 나눠서 따로 변환해 주세요.`);
+  if (score.cut) warnings.push(`글자수 상한(${opts.limit}자)에 맞추느라 앞부분 ${fmtTime(score.cutAt * sec64)}까지만 담았어요. (전체 ${fmtTime(score.totalEnd * sec64)}) 박자 정밀도를 8분음표로 바꾸거나 파트 수를 줄이면 더 길게 담을 수 있어요.`);
   if (dropped > 0) warnings.push(`동시에 울리는 음이 많아 ${dropped}개 음은 뺐어요. 파트 수를 늘리면 더 많이 담겨요.`);
   const over = score.parts.filter(p => p.length > 2400).length;
   if (over) warnings.push(`2,400자를 넘는 파트가 ${over}개 있어요. 인게임에 붙여넣기가 안 될 수 있어요.`);
@@ -1235,6 +1276,7 @@ function finish(raw, opts) {
   const fulls = scores.map(ps => 'MML@' + ps.join(',') + ';');
   const full = fulls.join('\n');
   state.last = { full, fulls, parts: score.parts, bpm: raw.bpm };
+  if (raw.autoBpm) $('bpmHint').textContent = `자동으로 찾은 템포: ${raw.bpm}`;
   if (scores.length > 1) warnings.push(`게임 악보 1장에는 6파트까지만 들어가서 악보 ${scores.length}장으로 나눴어요. 악보마다 따로 붙여넣어 주세요.`);
 
   // 출력
@@ -1243,11 +1285,8 @@ function finish(raw, opts) {
   $('resTitle').textContent = title;
   $('resSub').textContent = [artist && '아티스트: ' + artist, raw.info, ytId($('ytUrl').value) && state.source === 'youtube' ? '링크: ' + $('ytUrl').value.trim() : ''].filter(Boolean).join(' | ');
   const noteCount = score.parts.reduce((a, p) => a + parseTrack(p).notes.length, 0);
-  const gridName = opts.grid === 2 ? '32분음표' : '16분음표';
-  const octName = oct ? (oct > 0 ? `+${oct / 12}옥타브` : `${oct / 12}옥타브`) : '그대로';
   $('stats').innerHTML = [
-    ['템포 (자동)', 'T' + raw.bpm], ['박자 정밀도 (자동)', gridName], ['음 높이 (자동)', octName],
-    ['파트', score.parts.length + '개' + (scores.length > 1 ? ` · 악보 ${scores.length}장` : '')],
+    ['템포', 'T' + raw.bpm], ['파트', score.parts.length + '개' + (scores.length > 1 ? ` · 악보 ${scores.length}장` : '')],
     ['담긴 길이', fmtTime((score.cut ? score.cutAt : score.totalEnd) * sec64)], ['음표', noteCount + '개'],
   ].map(([k, v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
   const w = $('warn');
