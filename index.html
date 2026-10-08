@@ -1321,6 +1321,8 @@ function finish(raw, opts) {
     b.onclick = () => copyText(p, b, '복사 완료!');
     box.appendChild(d);
   });
+  // 통계: 악보를 만든 횟수 (방문자 정보는 보내지 않음)
+  try { if (window.goatcounter && goatcounter.count) goatcounter.count({ path: 'event-mml-convert-' + state.source, title: '악보 만들기 (' + state.source + ')', event: true }); } catch (e) {}
   $('result').style.display = 'block';
   $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1568,5 +1570,8 @@ function hideError() { $('err').style.display = 'none'; }
 // 테스트/디버그용 노출
 window.MML = { refreshEditor, encodeMp3, parseMidi, framesToNotes, estimateTempo, quantizeNotes, allocate, buildScore, renderTrack, parseMML, parseTrack, splitLen, finish, readOpts, state };
 </script>
+<!-- 방문자 통계 (GoatCounter, 쿠키 없음) -->
+<script data-goatcounter="https://erinn-bardic-archive.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
